@@ -294,7 +294,7 @@ Item {
                 color: "gray"
 
                 height: 22
-                width: (32 * 3) + 2
+                width: (32 * 4) + 2
 
                 Image {
                     id: humanButton
@@ -309,6 +309,7 @@ Item {
                             humanButton.selected = true
                             neutralMobButton.selected = false
                             violentMobButton.selected = false
+                            migrantButton.selected = false
                             unitList.model = humanModelProxy
                             unitList.delegate = humanDelegate
                             addUnitGrid.model = humanTypeModel
@@ -332,7 +333,7 @@ Item {
                 }
                 Image {
                     id: neutralMobButton
-                    anchors.centerIn: parent
+                    anchors.left: humanButton.right
                     source: "images/neutralMobButton.svg"
                     property bool selected
                     MouseArea {
@@ -342,6 +343,7 @@ Item {
                             humanButton.selected = false
                             neutralMobButton.selected = true
                             violentMobButton.selected = false
+                            migrantButton.selected = false
                             unitList.model = neutralMobModelProxy
                             unitList.delegate = neutralMobDelegate
                             addUnitGrid.model = neutralMobTypeModel
@@ -365,7 +367,7 @@ Item {
                 }
                 Image {
                     id: violentMobButton
-                    anchors.right: parent.right
+                    anchors.left: neutralMobButton.right
                     source: "images/violentMobButton.svg"
                     property bool selected
                     MouseArea {
@@ -377,6 +379,7 @@ Item {
                             humanButton.selected = false
                             neutralMobButton.selected = false
                             violentMobButton.selected = true
+                            migrantButton.selected = false
                             addUnitGrid.model = violentMobTypeModel
                         }
                     }
@@ -393,6 +396,41 @@ Item {
                             PropertyChanges {
                                 target: violentMobButton
                                 source: "images/violentMobButtonSelected.svg"
+                            }
+                        }]
+                }
+                Image {
+                    id: migrantButton
+                    anchors.left: violentMobButton.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: "images/migrantButton.svg"
+                    property bool selected: true
+                    MouseArea {
+                        id: migrantButtonArea
+                        anchors.fill: parent
+                        onClicked: {
+                            humanButton.selected = false
+                            neutralMobButton.selected = false
+                            violentMobButton.selected = false
+                            migrantButton.selected = true
+                            unitList.model = migrantModelProxy
+                            unitList.delegate = migrantDelegate
+                            addUnitGrid.model = humanTypeModel
+                        }
+                    }
+                    states: [
+                        State { // Pressed
+                            when: migrantButtonArea.pressed
+                            PropertyChanges {
+                                target: migrantButton
+                                source: "images/migrantButtonPressed.svg"
+                            }
+                        },
+                        State { // Selected
+                            when: migrantButton.selected
+                            PropertyChanges {
+                                target: migrantButton
+                                source: "images/migrantButtonSelected.svg"
                             }
                         }]
                 }
@@ -517,6 +555,9 @@ Item {
         }
         ViolentMobDelegate {
             id: violentMobDelegate
+        }
+        MigrantDelegate {
+            id: migrantDelegate
         }
 
         ListView {

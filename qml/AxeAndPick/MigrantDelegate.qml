@@ -1,5 +1,5 @@
 import QtQuick 2.0
-//import Human 1.0
+//import Migrant 1.0
 
 // This is the component that displays each human in the list
 Component {
