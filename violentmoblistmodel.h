@@ -4,6 +4,8 @@
 #include <QAbstractListModel>
 #include <QList>
 #include <QVariant>
+#include <QFile>
+#include <QTextStream>
 
 #include "listmodel.h"
 
@@ -39,9 +41,16 @@ public:
                         const float &health,
                         const float &subtype,
                         const bool  &leader,
+
+                        const signed short &dirty,
+                        const QString &rawData,
+
                         QObject * parent = 0);
 
-    static ViolentMob * build(QStringList & unitData);
+    static ViolentMob * build(QString & unitString);
+
+    // Writer. Writes the entire violent mob class to a file in the Timber and Stone format.
+    void writeToFile( QFile &unitFile );
 
     QVariant data(int role) const;
     QHash<int, QByteArray> roleNames() const;
@@ -62,6 +71,10 @@ public:
     inline float subtype() const { return m_subtype; }
     inline float leader() const { return m_leader; }
 
+    inline signed short dirty() const { return m_dirty; }
+    inline QString rawData() const { return m_rawData; }
+
+
     // Utilities
     void print();
 
@@ -76,6 +89,8 @@ private:
     float m_health;
     float m_subtype;
     bool  m_leader;
+    signed short m_dirty;
+    QString m_rawData;
 };
 
 // ViolentMobListModel store ViolentMobs

@@ -15,6 +15,8 @@ ViolentMob::ViolentMob(const QString &type,
                        const float &health,
                        const float &subtype,
                        const bool  &leader,
+                       const signed short &dirty,
+                       const QString &rawData,
                        QObject * parent)
     : ListItem(parent),
       m_id(id_counter),
@@ -25,31 +27,72 @@ ViolentMob::ViolentMob(const QString &type,
       m_rotation(rotation),
       m_health(health),
       m_subtype(subtype),
-      m_leader(leader)
+      m_leader(leader),
+      m_dirty(dirty),
+      m_rawData(rawData)
 {
     id_counter++;
 }
 
-ViolentMob * ViolentMob::build(QStringList & unitData)
+ViolentMob * ViolentMob::build(QString & unitString)
 {
-    if (unitData.size() == 9)
-    {
-        return (new ViolentMob( unitData[0],
-                                unitData[1].toFloat(),
-                                unitData[2].toFloat(),
-                                unitData[3].toFloat(),
-                                unitData[4].toFloat(),
-                                unitData[5].toFloat(),
-                                unitData[6].toFloat(),
-                                unitData[7].compare("True") ? false : true));
+    QStringList unitData = unitString.split('/');
+    signed short dirty = 0;
+
+    // Sanity, to see if we can edit this entry without problems
+    // The "read-open" dirty flag of -1 will make this app a little more resistante to bugs caused by save file changes
+    if (unitData.size() != 9)
+        dirty = -1;
+
+    const QString rawData = unitString;
+
+    return (new ViolentMob( unitData[0],
+                            unitData[1].toFloat(),
+                            unitData[2].toFloat(),
+                            unitData[3].toFloat(),
+                            unitData[4].toFloat(),
+                            unitData[5].toFloat(),
+                            unitData[6].toFloat(),
+                            unitData[7].compare("True") ? false : true,
+                            dirty,
+                            rawData
+                ));
+}
+
+
+/**
+ * @brief Write the violent mob data back to a file.
+ */
+void ViolentMob::writeToFile( QFile &unitFile )
+{
+    QTextStream unitStream(&unitFile);
+
+    if ( (dirty() > 0) || (rawData() == Q_NULLPTR) ) {
+        unitStream << type() << "/"
+                   << posX() << "/"
+                   << posY() << "/"
+                   << posZ() << "/"
+                   << rotation() << "/"
+                   << health() << "/"
+                   << subtype() << "/"
+                   << QString(leader() ? "True" : "False") << "/";
+    } else {
+        unitStream << rawData();
     }
 
-    return Q_NULLPTR;
+    unitStream << endl;
+    unitStream.flush();
 }
 
 void ViolentMob::setType(QString type)
 {
     m_type = type;
+
+    if (m_dirty >= 0) m_dirty = 1;
+    else {
+        // TODO:
+        // Let the user know his changes arn't going to be saved
+    }
 }
 
 QHash<int, QByteArray> ViolentMob::roleNames() const
@@ -180,8 +223,11 @@ void ViolentMobListModel::add(const QString type, int subtype, float x, float y,
                   x, y, z,     // position
                   rotation,    // rotation
                   100,         // health
-                  subtype,        // type of the type of mob
-                  isALeader)); // leader
+                  subtype,     // type of the type of mob
+                  isALeader,   // leader
+                  1,           // This is a dirty mob, since it's new
+                  Q_NULLPTR    // It won't need raw data either.
+                  ));
 
 
     qDebug() << "Added a" << type << "mob of type" << subtype;

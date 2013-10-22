@@ -64,6 +64,8 @@ public:
     void setHumanModel(HumanListModel * model);
     void setNeutralMobModel(NeutralMobListModel * model);
     void setViolentMobModel(ViolentMobListModel * model);
+    void setMigrantModel(HumanListModel * model);
+
 
     void loadUnitFile();
     void saveUnitFile();
@@ -72,6 +74,7 @@ private:
     HumanListModel * humanModel;
     NeutralMobListModel * neutralMobModel;
     ViolentMobListModel * violentMobModel;
+    HumanListModel * migrantModel;
 
 
     // World/Ground File

@@ -311,6 +311,10 @@ void SavesAccess::setViolentMobModel(ViolentMobListModel * model)
 {
     violentMobModel = model;
 }
+void SavesAccess::setMigrantModel(HumanListModel * model)
+{
+    migrantModel = model;
+}
 
 void SavesAccess::loadUnitFile()
 {
@@ -324,7 +328,8 @@ void SavesAccess::loadUnitFile()
 
     if ((humanModel == Q_NULLPTR) |
         (neutralMobModel == Q_NULLPTR) |
-        (violentMobModel == Q_NULLPTR) )
+        (violentMobModel == Q_NULLPTR) |
+        (migrantModel == Q_NULLPTR))
     {
         qDebug() << "Human, neutral, violent mob models haven't been set up yet.";
         return;
@@ -354,9 +359,7 @@ void SavesAccess::loadUnitFile()
         for (int i=0; i<numberOfHumans; i++)
         {
             unitString = unitStream.readLine();
-            unitData = unitString.split('/');
-
-            Human * newHuman = Human::build(unitData);
+            Human * newHuman = Human::build(unitString);
             if (newHuman != Q_NULLPTR)
             {
                 humanModel->appendRow(newHuman);
@@ -364,7 +367,7 @@ void SavesAccess::loadUnitFile()
             else
             {
                 errorOccured = true;
-                qDebug() << "Note: There are" << unitData.size() << "fields in the Human string (not legal!).";
+                qDebug() << "Note: There are" << unitData.size() << "fields in the Human string, but that's probably not the source of the problem2.";
             }
         }
 
@@ -376,9 +379,7 @@ void SavesAccess::loadUnitFile()
         for (int i=0; i<numberOfNeutralMobs; i++)
         {
             unitString = unitStream.readLine();
-            unitData = unitString.split('/');
-
-            NeutralMob * newMob = NeutralMob::build(unitData);
+            NeutralMob * newMob = NeutralMob::build(unitString);
             if (newMob != Q_NULLPTR)
             {
                 neutralMobModel->appendRow(newMob);
@@ -386,7 +387,7 @@ void SavesAccess::loadUnitFile()
             else
             {
                 errorOccured = true;
-                qDebug() << "Note: There are" << unitData.size() << "fields in the Neutral Mob string (not legal!).";
+                qDebug() << "Note: There are" << unitData.size() << "fields in the Neutral Mob string, but that's probably not the source of the problem.";
             }
         }
 
@@ -398,9 +399,7 @@ void SavesAccess::loadUnitFile()
         for (int i=0; i<numberOfViolentMobs; i++)
         {
             unitString = unitStream.readLine();
-            unitData = unitString.split('/');
-
-            ViolentMob * newMob = ViolentMob::build(unitData);
+            ViolentMob * newMob = ViolentMob::build(unitString);
             if (newMob != Q_NULLPTR)
             {
                 violentMobModel->appendRow(newMob);
@@ -408,14 +407,37 @@ void SavesAccess::loadUnitFile()
             else
             {
                 errorOccured = true;
-                qDebug() << "Note: There are" << unitData.size() << "fields in the Violent Mob string (not legal!).";
+                qDebug() << "Note: There are" << unitData.size() << "fields in the Violent Mob string, but that's probably not the source of the problem.";
+            }
+        }
+
+        //
+        // Load all migrants... hopefully anyways XD
+        //
+        migrantModel->clear();
+        int numberOfMigrants = 0;
+        while (!unitStream.atEnd())
+        {
+            unitString = unitStream.readLine();
+            qDebug() << "Loaded extra data: \"" << unitString << "\"";
+            Human * newHuman = Human::build(unitString);
+            if (newHuman != Q_NULLPTR)
+            {
+                migrantModel->appendRow(newHuman);
+                numberOfMigrants++;
+            }
+            else
+            {
+                errorOccured = true;
+                qDebug() << "Note: There are" << unitData.size() << "fields in the Migrant (or Extra) string, but that's probably not the source of the problem.";
             }
         }
 
         qDebug() << "From" << selectedSaveName
-                << ": Loaded" << humanModel->rowCount() << "of" << numberOfHumans << "humans,"
-                 << neutralMobModel->rowCount() << "of" << numberOfNeutralMobs << "animals, and"
-                 << violentMobModel->rowCount() << "of" << numberOfViolentMobs << "bad guys.";
+                 << ": Loaded" << humanModel->rowCount() << "of" << numberOfHumans << "humans,"
+                 << neutralMobModel->rowCount() << "of" << numberOfNeutralMobs << "animals,"
+                 << violentMobModel->rowCount() << "of" << numberOfViolentMobs << "bad guys, and"
+                 << migrantModel->rowCount() << "migrants.";
 
         if (errorOccured) {
             message = "This saved-game version is not supported! Saving is disabled and data may be innacurate.";
@@ -434,7 +456,8 @@ void SavesAccess::saveUnitFile()
 
     if (   humanModel == Q_NULLPTR
         || neutralMobModel == Q_NULLPTR
-        || violentMobModel == Q_NULLPTR )
+        || violentMobModel == Q_NULLPTR
+        || migrantModel == Q_NULLPTR)
     {
         qDebug() << "The unit models haven't been set up.";
 
@@ -458,7 +481,7 @@ void SavesAccess::saveUnitFile()
     {
         QTextStream unitStream(&unitFile);
 
-        // Save the humans, then the neutral mobs, then the violent mobs.
+        // Save the humans, then the neutral mobs, then the violent mobs then migrants.
 
         // Humans
         unitStream << humanModel->rowCount() << endl;
@@ -475,25 +498,7 @@ void SavesAccess::saveUnitFile()
         for (QList<ListItem*>::iterator itr = neutralMobModel->getList().begin(); itr != neutralMobModel->getList().end(); itr++)
         {
             NeutralMob* mob = (NeutralMob*)*itr;
-            unitStream << mob->type() << "/"
-                       << mob->posX() << "/"
-                       << mob->posY() << "/"
-                       << mob->posZ() << "/"
-                       << mob->rotation() << "/";
-
-            // Write all the unknown floats
-            for (int i=0; i<4; i++)
-            {
-                unitStream << mob->unknown_float(i) << "/";
-            }
-
-            // Write all the options
-            for (int i=0; i<3; i++)
-            {
-                unitStream << QString(mob->option(i)?"True":"False") << "/";
-            }
-
-            unitStream << endl;
+            mob->writeToFile(unitFile);
         }
 
         // Violent Mobs
@@ -502,15 +507,15 @@ void SavesAccess::saveUnitFile()
         for (QList<ListItem*>::iterator itr = violentMobModel->getList().begin(); itr != violentMobModel->getList().end(); itr++)
         {
             ViolentMob* mob = (ViolentMob*)*itr;
-            unitStream << mob->type() << "/"
-                       << mob->posX() << "/"
-                       << mob->posY() << "/"
-                       << mob->posZ() << "/"
-                       << mob->rotation() << "/"
-                       << mob->health() << "/"
-                       << mob->subtype() << "/"
-                       << QString(mob->leader() ? "True" : "False") << "/";
-            unitStream << endl;
+            mob->writeToFile(unitFile);
+        }
+
+        // Migrants
+        unitStream.flush();
+        for (QList<ListItem*>::iterator itr = migrantModel->getList().begin(); itr != migrantModel->getList().end(); itr++)
+        {
+            Human* human = (Human*)*itr;
+            human->writeToFile(unitFile);
         }
     }
 

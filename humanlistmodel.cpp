@@ -81,6 +81,9 @@ Human::Human(const QString &profession,
 
              const float &maxWeight,
 
+             const signed short &dirty,
+             const QString &rawData,
+
              QObject * parent)
     : ListItem(parent),
     m_id(id_counter),
@@ -151,20 +154,29 @@ Human::Human(const QString &profession,
 
     m_professionEXP(professionEXP),
 
-    m_maxWeight(maxWeight)
+    m_maxWeight(maxWeight),
+
+    m_dirty(dirty),
+    m_rawData(rawData)
 
 {
     id_counter++;
 }
 
-Human * Human::build(QStringList & unitData)
+Human * Human::build(QString & unitString)
 {
+    QStringList unitData = unitString.split('/');
+    signed short dirty = 0;
 
-    // Run a sanity check to make sure the version of
-    // this save file is what we expect.
-    //
-    if (false) {
-        return Q_NULLPTR;
+    // Sanity, to see if we can edit this entry without problems
+    // The "read-open" dirty flag of -1 will make this app a little more resistante to bugs caused by save file changes
+    if (unitData.size() < 92) {
+        dirty = -1;
+
+        /* No need to return a null pointer here, our rawData variable will do the heavy lifting for us :)
+         * Might want to do more sanity checks below, and set dirty to negative if need be.
+         * Dirty is basically a bool with 3 possible values; positive, negative, and zero.
+         */
     }
 
     QString unitProfession = unitData[0];
@@ -286,6 +298,8 @@ Human * Human::build(QStringList & unitData)
         maxWeight = unitData[133 + numItemsInInventory + numSpareInventory + numPatrolPoints*3].toFloat();
     }
 
+    const QString rawData = unitString;
+
     return (new Human(
                 unitProfession,
                 unitData[1].toFloat(),
@@ -353,9 +367,11 @@ Human * Human::build(QStringList & unitData)
 
                 professionEXP,
 
-                maxWeight
-               ));
+                maxWeight,
 
+                dirty,
+                rawData
+               ));
 }
 
 /**
@@ -365,135 +381,158 @@ void Human::writeToFile( QFile &unitFile )
 {
     QTextStream unitStream(&unitFile);
 
-    unitStream << profession() << "/"
-               << QString("%1").arg(posX(),0,'g',8) << "/"
-               << QString("%1").arg(posY(),0,'g',8) << "/"
-               << QString("%1").arg(posZ(),0,'g',8) << "/"
-               << name() << "/";
-    unitStream.flush();
+    // dirty should be set to true for new units
+    if ( (dirty() > 0) || (rawData() == Q_NULLPTR) ) {
+        unitStream << profession() << "/"
+                   << QString("%1").arg(posX(),0,'g',8) << "/"
+                   << QString("%1").arg(posY(),0,'g',8) << "/"
+                   << QString("%1").arg(posZ(),0,'g',8) << "/"
+                   << name() << "/";
+        unitStream.flush();
 
-    unitFile.write(Utils::toBinary(archerLevel()));
-    unitFile.write(Utils::toBinary(blacksmithLevel()));
-    unitFile.write(Utils::toBinary(builderLevel()));
-    unitFile.write(Utils::toBinary(carpenterLevel()).constData());
-    unitFile.write(Utils::toBinary(engineerLevel()).constData());
-    unitFile.write(Utils::toBinary(farmerLevel()).constData());
-    unitFile.write(Utils::toBinary(fishermanLevel()).constData());
-    unitFile.write(Utils::toBinary(foragerLevel()).constData());
-    unitFile.write(Utils::toBinary(infantryLevel()).constData());
-    unitFile.write(Utils::toBinary(minerLevel()).constData());
-    unitFile.write(Utils::toBinary(stoneMasonLevel()).constData());
-    unitFile.write(Utils::toBinary(woodChopperLevel()).constData());
-    unitFile.write(Utils::toBinary(tailorLevel()).constData());
-    unitFile.write(Utils::toBinary(traderLevel()).constData());
-    unitFile.write(Utils::toBinary(herderLevel()).constData());
-    unitFile.write(Utils::toBinary(adventurerLevel()).constData());
-    unitFile.write(Utils::toBinary(unknown1Level()).constData());
-    unitFile.write(Utils::toBinary(unknown2Level()).constData());
-    unitFile.write(Utils::toBinary(unknown3Level()).constData());
-    unitFile.write(Utils::toBinary(unknown4Level()).constData());
-    unitStream << "/"; unitStream.flush();
+        unitFile.write(Utils::toBinary(archerLevel()));
+        unitFile.write(Utils::toBinary(blacksmithLevel()));
+        unitFile.write(Utils::toBinary(builderLevel()));
+        unitFile.write(Utils::toBinary(carpenterLevel()).constData());
+        unitFile.write(Utils::toBinary(engineerLevel()).constData());
+        unitFile.write(Utils::toBinary(farmerLevel()).constData());
+        unitFile.write(Utils::toBinary(fishermanLevel()).constData());
+        unitFile.write(Utils::toBinary(foragerLevel()).constData());
+        unitFile.write(Utils::toBinary(infantryLevel()).constData());
+        unitFile.write(Utils::toBinary(minerLevel()).constData());
+        unitFile.write(Utils::toBinary(stoneMasonLevel()).constData());
+        unitFile.write(Utils::toBinary(woodChopperLevel()).constData());
+        unitFile.write(Utils::toBinary(tailorLevel()).constData());
+        unitFile.write(Utils::toBinary(traderLevel()).constData());
+        unitFile.write(Utils::toBinary(herderLevel()).constData());
+        unitFile.write(Utils::toBinary(adventurerLevel()).constData());
+        unitFile.write(Utils::toBinary(unknown1Level()).constData());
+        unitFile.write(Utils::toBinary(unknown2Level()).constData());
+        unitFile.write(Utils::toBinary(unknown3Level()).constData());
+        unitFile.write(Utils::toBinary(unknown4Level()).constData());
+        unitStream << "/"; unitStream.flush();
 
-    unitFile.write(Utils::toBinary(experience()).constData());
-    unitStream << "/"; unitStream.flush();
+        unitFile.write(Utils::toBinary(experience()).constData());
+        unitStream << "/"; unitStream.flush();
 
-    unitStream << QString(autoChop()?"True":"False") << "/"
-               << QString(gatherBerries()?"True":"False") << "/"
-               << QString(huntChicken()?"True":"False") << "/"
-               << QString(huntBoar()?"True":"False") << "/"
-               << QString(showBowRange()?"True":"False") << "/";
+        unitStream << QString(autoChop()?"True":"False") << "/"
+                   << QString(gatherBerries()?"True":"False") << "/"
+                   << QString(huntChicken()?"True":"False") << "/"
+                   << QString(huntBoar()?"True":"False") << "/"
+                   << QString(showBowRange()?"True":"False") << "/";
 
-    unitStream << QString(trainNearTarget()?"True":"False") << "/";
+        unitStream << QString(trainNearTarget()?"True":"False") << "/";
 
-    unitStream << QString("%1").arg(rotation(),0,'g',8) << "/";
-    unitStream.flush();
+        unitStream << QString("%1").arg(rotation(),0,'g',8) << "/";
+        unitStream.flush();
 
-    unitFile.write(Utils::toBinary(equipHand()).constData());
-    unitStream << "/"; unitStream.flush();
-    unitFile.write(Utils::toBinary(equipOffhand()).constData());
-    unitStream << "/"; unitStream.flush();
-    unitFile.write(Utils::toBinary(equipHead()).constData());
-    unitStream << "/"; unitStream.flush();
-    unitFile.write(Utils::toBinary(equipBody()).constData());
-    unitStream << "/"; unitStream.flush();
-    unitFile.write(Utils::toBinary(equipFeet()).constData());
-    unitStream << "/"; unitStream.flush();
-    unitFile.write(Utils::toBinary(health()).constData());
-    unitStream << "/"; unitStream.flush();
+        unitFile.write(Utils::toBinary(equipHand()).constData());
+        unitStream << "/"; unitStream.flush();
+        unitFile.write(Utils::toBinary(equipOffhand()).constData());
+        unitStream << "/"; unitStream.flush();
+        unitFile.write(Utils::toBinary(equipHead()).constData());
+        unitStream << "/"; unitStream.flush();
+        unitFile.write(Utils::toBinary(equipBody()).constData());
+        unitStream << "/"; unitStream.flush();
+        unitFile.write(Utils::toBinary(equipFeet()).constData());
+        unitStream << "/"; unitStream.flush();
+        unitFile.write(Utils::toBinary(health()).constData());
+        unitStream << "/"; unitStream.flush();
 
-    // Dump some of the options in the file.
-    for (unsigned int i = 0; i<52; i++) {
-        unitStream << QString(option(i)?"True":"False") << "/";
+        // Dump some of the options in the file.
+        for (unsigned int i = 0; i<52; i++) {
+            unitStream << QString(option(i)?"True":"False") << "/";
+        }
+        unitStream << timeToEat() << "/"
+                   << morale() << "/"
+                   << fatigue() << "/"
+                   << hunger() << "/";
+
+        // Dump more options in the file.
+        for (unsigned int i = 52; i<52+12; i++) {
+            unitStream << QString(option(i)?"True":"False") << "/";
+        }
+
+        // Inventory Preferences
+        for (int i = 0; i<inventoryPreferences()->length(); i++) {
+            unitStream << inventoryPreferences()->at(i) << "/";
+        }
+
+        // Inventory Items
+        unitStream << inventoryItems()->length() << "/";
+        for (int i = 0; i<inventoryItems()->length(); i++) {
+            unitStream << inventoryItems()->at(i) << "/";
+        }
+
+        // Spare Inventory
+        unitStream << spareInventory()->length() << "/";
+        for (int i = 0; i<spareInventory()->length(); i++) {
+            unitStream << spareInventory()->at(i) << "/";
+        }
+
+        // Patrol
+        unitStream << patrolSetpoints()->length() << "/";
+        for (int i = 0; i<patrolSetpoints()->length(); i++) {
+            unitStream << patrolSetpoints()->at(i) << "/";
+        }
+        unitStream << patrolIndex() << "/";
+
+        unitStream << guardedUnit() << "/";
+
+        // Profession Experience
+        for (int i = 0; i<professionEXP()->length(); i++) {
+            unitStream << professionEXP()->at(i) << "/";
+        }
+
+        unitStream << maxWeight() << "/";
+
+    } else {
+        unitStream << rawData();
     }
-    unitStream << timeToEat() << "/"
-               << morale() << "/"
-               << fatigue() << "/"
-               << hunger() << "/";
-
-    // Dump more options in the file.
-    for (unsigned int i = 52; i<52+12; i++) {
-        unitStream << QString(option(i)?"True":"False") << "/";
-    }
-
-    // Inventory Preferences
-    for (int i = 0; i<inventoryPreferences()->length(); i++) {
-        unitStream << inventoryPreferences()->at(i) << "/";
-    }
-
-    // Inventory Items
-    unitStream << inventoryItems()->length() << "/";
-    for (int i = 0; i<inventoryItems()->length(); i++) {
-        unitStream << inventoryItems()->at(i) << "/";
-    }
-
-    // Spare Inventory
-    unitStream << spareInventory()->length() << "/";
-    for (int i = 0; i<spareInventory()->length(); i++) {
-        unitStream << spareInventory()->at(i) << "/";
-    }
-
-    // Patrol
-    unitStream << patrolSetpoints()->length() << "/";
-    for (int i = 0; i<patrolSetpoints()->length(); i++) {
-        unitStream << patrolSetpoints()->at(i) << "/";
-    }
-    unitStream << patrolIndex() << "/";
-
-    unitStream << guardedUnit() << "/";
-
-    // Profession Experience
-    for (int i = 0; i<professionEXP()->length(); i++) {
-        unitStream << professionEXP()->at(i) << "/";
-    }
-
-    unitStream << maxWeight() << "/";
 
     unitStream << endl;
     unitStream.flush();
-
 }
 
+void Human::setDirty() {
+    if (m_dirty >= 0) {
+        m_dirty = 1;
+    } else {
+        // TODO:
+        // Let the user know his changes arn't going to be saved
+    }
+}
 
 void Human::setProfession(QString profession)
 {
     // Placeholder for when things are changed.
     m_profession = profession;
+
+    setDirty();
 }
 
 void Human::setMorale(float morale)
 {
     // Placeholder for when things are changed.
     m_morale = morale;
+
+    setDirty();
 }
+
 void Human::setFatigue(float fatigue)
 {
     // Placeholder for when things are changed.
     m_fatigue = fatigue;
+
+    setDirty();
 }
+
 void Human::setHunger(float hunger)
 {
     // Placeholder for when things are changed.
     m_hunger = hunger;
+
+    setDirty();
 }
 
 
@@ -868,7 +907,9 @@ void HumanListModel::add(const QString profession, float x, float y, float z)
 
                   // There may be a desire to increase the max weight, perhaps when
                   // giving a unit coffee.
-                  10 // max weight (it seems 10 is the default)
+                  10, // max weight (it seems 10 is the default)
+                  1, // This is a dirty entry, because we don't have rawData to steal from a save file
+                  Q_NULLPTR // By consequence of above, our rawData doesn't need to exist
                   )
               );
 

@@ -147,19 +147,24 @@ public:
                    const QList<int> &professionEXP,
 
                    const float &maxWeight,
+
+                   const signed short &dirty,
+                   const QString &rawData,
+
                    QObject * parent = 0);
 
     // Builder. This returns a Human which is all set up.
-    static Human * build(QStringList & unitData);
+    static Human * build(QString & unitString);
 
     // Writer. Writes the entire Human class to a file in the Timber and Stone format.
-    void Human::writeToFile( QFile &unitFile );
+    void writeToFile( QFile &unitFile );
 
     QVariant data(int role) const;
     QHash<int, QByteArray> roleNames() const;
     QString filterString() const;
 
     // Setters for properties
+    void setDirty();
     void setProfession(QString profession);
     void setMorale(float morale);
     void setFatigue(float fatigue);
@@ -234,6 +239,9 @@ public:
     inline QList<int> const * professionEXP() const { return &m_professionEXP; }
 
     inline float maxWeight() { return m_maxWeight; }
+
+    inline signed short dirty() { return m_dirty; }
+    inline QString rawData() { return m_rawData; }
 
     // Utilities and Helpers
     void print();
@@ -310,6 +318,9 @@ private:
     QList<int> m_professionEXP;
 
     float m_maxWeight;
+
+    signed short m_dirty;
+    QString m_rawData;
 };
 
 // HumanListModel store Humans

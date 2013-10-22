@@ -14,6 +14,8 @@ NeutralMob::NeutralMob(const QString &type,
                        const float &rotation,
                        const QList<float> &unknown_floats,
                        const QBitArray &options,
+                       const signed short &dirty,
+                       const QString &rawData,
                        QObject * parent)
     : ListItem(parent),
       m_id(id_counter),
@@ -23,44 +25,97 @@ NeutralMob::NeutralMob(const QString &type,
       m_posZ(posZ),
       m_rotation(rotation),
       m_unknown(unknown_floats),
-      m_options(options)
+      m_options(options),
+      m_dirty(dirty),
+      m_rawData(rawData)
 {
     id_counter++;
 }
 
-NeutralMob * NeutralMob::build(QStringList & unitData)
+NeutralMob * NeutralMob::build(QString & unitString)
 {
-    if (unitData.size() == 13)
+    QStringList unitData = unitString.split('/');
+    signed short dirty = 0;
+
+    // Sanity, to see if we can edit this entry without problems
+    // The "read-open" dirty flag of -1 will make this app a little more resistante to bugs caused by save file changes
+    if (unitData.size() != 13)
+        dirty = -1;
+
+    // Load in the unknown floats
+    QList<float> unknown_floats;
+    for (int i=0; i<4; i++)
     {
-        // Load in the unknown floats
-        QList<float> unknown_floats;
-        for (int i=0; i<4; i++)
-        {
-            unknown_floats.append(unitData[i+5].toFloat());
-        }
-
-        // Load in the options
-        QBitArray options(3, false);
-        for (int i=0; i<3; i++)
-        {
-            options.setBit(i, unitData[i+9].compare("True") ? false : true);
-        }
-
-        return (new NeutralMob( unitData[0],
-                                unitData[1].toFloat(),
-                                unitData[2].toFloat(),
-                                unitData[3].toFloat(),
-                                unitData[4].toFloat(),
-                                unknown_floats,
-                                options ));
+        unknown_floats.append(unitData[i+5].toFloat());
     }
 
-    return Q_NULLPTR;
+    // Load in the options
+    QBitArray options(3, false);
+    for (int i=0; i<3; i++)
+    {
+        options.setBit(i, unitData[i+9].compare("True") ? false : true);
+    }
+
+    const QString rawData = unitString;
+
+    return (new NeutralMob( unitData[0],
+                            unitData[1].toFloat(),
+                            unitData[2].toFloat(),
+                            unitData[3].toFloat(),
+                            unitData[4].toFloat(),
+                            unknown_floats,
+                            options,
+                            dirty,
+                            rawData // Dono if new is needed here, but let's be safe and slow and mostly lazy :)
+            ));
+
+    // Won't need this anymore... I hope :)
+    //return Q_NULLPTR;
+}
+
+/**
+ * @brief Write the neutral mob data back to a file.
+ */
+void NeutralMob::writeToFile( QFile &unitFile )
+{
+    QTextStream unitStream(&unitFile);
+
+    if ( (dirty() > 0) || (rawData() == Q_NULLPTR) ) { // dirty = 0 means not dirty, dirty < 0 means uneditable, dirty > 0 means we can probably edit this entry without issue
+        unitStream << type() << "/"
+                   << posX() << "/"
+                   << posY() << "/"
+                   << posZ() << "/"
+                   << rotation() << "/";
+
+        // Write all the unknown floats
+        for (int i=0; i<4; i++)
+        {
+            unitStream << unknown_float(i) << "/";
+        }
+
+        // Write all the options
+        for (int i=0; i<3; i++)
+        {
+            unitStream << QString(option(i)?"True":"False") << "/";
+        }
+
+    } else {
+        unitStream << rawData();
+    }
+
+    unitStream << endl;
+    unitStream.flush();
 }
 
 void NeutralMob::setType(QString type)
 {
     m_type = type;
+
+    if (m_dirty >= 0) m_dirty = 1;
+    else {
+        // TODO:
+        // Let the user know his changes arn't going to be saved
+    }
 }
 
 QHash<int, QByteArray> NeutralMob::roleNames() const
@@ -180,7 +235,10 @@ void NeutralMobListModel::add(const QString type, float x, float y, float z)
                   x, y, z,  // position
                   0.0,      // rotation
                   unknown_floats,
-                  options) );
+                  options,
+                  1,
+                  Q_NULLPTR
+               ));
 
     qDebug() << "Added a mob of type" << type;
 }

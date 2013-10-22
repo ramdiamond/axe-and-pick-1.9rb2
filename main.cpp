@@ -33,8 +33,9 @@ QString appVersion()
     // 1.7 - fixed adventurer (T&S v1.2 didn't change anything)
     // 1.8 - updated for T&S 1.3 (and some other tweaks)
     // 1.9 - updated for T&S 1.4
+    // 1.9r - updated for T&S 1.42 by ramdiamond
     //
-    return "1.9 (for T&S v1.4) BETA 1";
+    return "1.9r (for T&S v1.4) BETA 2";
 }
 
 int main(int argc, char *argv[])
@@ -162,6 +163,16 @@ int main(int argc, char *argv[])
     proxyViolentMobModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     viewer.rootContext()->setContextProperty("violentMobModelProxy", proxyViolentMobModel);
 
+    // Migrants
+    HumanListModel * migrantModel = new HumanListModel(new Human, qApp);
+    savesAccess.setMigrantModel(migrantModel);
+    viewer.rootContext()->setContextProperty("migrantModel", migrantModel);
+    QSortFilterProxyModel * proxyMigrantModel = new QSortFilterProxyModel();
+    proxyMigrantModel->setSourceModel(migrantModel);
+    proxyMigrantModel->setFilterRole(Human::FilterStringRole);
+    proxyMigrantModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    viewer.rootContext()->setContextProperty("migrantModelProxy", proxyMigrantModel);
+    proxyMigrantModel->setFilterRegExp("^(?!unknown).*");
 
     // Load the QML
     viewer.setMainQmlFile(QStringLiteral("qml/AxeAndPick/main.qml"));
@@ -177,6 +188,8 @@ int main(int argc, char *argv[])
     delete proxyHumanModel;
     delete proxyNeutralMobModel;
     delete proxyViolentMobModel;
+    delete proxyMigrantModel;
+
 
     return appExecReturn;
 }

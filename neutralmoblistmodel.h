@@ -5,6 +5,8 @@
 #include <QList>
 #include <QVariant>
 #include <QBitArray>
+#include <QFile>
+#include <QTextStream>
 
 #include "listmodel.h"
 
@@ -37,9 +39,14 @@ public:
                         const float &rotation,
                         const QList<float> &unknown_floats,
                         const QBitArray &options,
+                        const signed short &dirty,
+                        const QString &rawData,
                         QObject * parent = 0);
 
-    static NeutralMob * build(QStringList & unitData);
+    static NeutralMob * build(QString & unitString);
+
+    // Writer. Writes the entire NeutralMob class to a file in the Timber and Stone format.
+    void writeToFile( QFile &unitFile );
 
     QVariant data(int role) const;
     QHash<int, QByteArray> roleNames() const;
@@ -59,6 +66,9 @@ public:
     inline bool unknown_float(unsigned int index) const { return m_unknown.at(index); }
     inline bool option(unsigned int optionNumber) const { return m_options[optionNumber]; }
 
+    inline signed short dirty() const { return m_dirty; }
+    inline QString rawData() const { return m_rawData; }
+
     // Utilities
     void print();
 
@@ -72,6 +82,8 @@ private:
     float m_rotation;
     QList<float> m_unknown;
     QBitArray m_options;
+    signed short m_dirty;
+    QString m_rawData;
 };
 
 // NeutralMobListModel store NeutralMobs
