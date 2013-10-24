@@ -67,6 +67,16 @@ Component {
                     color: "grey"
                     clip: true
                 }
+                Text {
+                    id: typeAdditional
+                    text: "additional"
+
+                    anchors.left: typeProfession.right
+
+                    font.pointSize: 7
+                    color: "grey"
+                    clip: true
+                }
             }
         }
 
