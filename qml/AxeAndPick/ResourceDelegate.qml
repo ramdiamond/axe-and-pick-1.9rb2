@@ -183,19 +183,25 @@ Component {
                         anchors.fill: parent
                         onClicked: {
                             var newQuantity;
-                            // If Shift+Click, add 100 instead of 10.
-                            if (mouse.modifiers & Qt.ShiftModifier) {
+                            // If Modifier+Click, add n instead of 1.
+                            if (mouse.modifiers & Qt.ShiftModifier & Qt.AltModifier & Qt.ControlModifier) {
+                                newQuantity = 10000;
+                            } else if (mouse.modifiers & Qt.ControlModifier) {
+                                newQuantity = 1000;
+                            } else if (mouse.modifiers & Qt.AltModifier) {
                                 newQuantity = 100;
-                            }
-                            else {
+                            } else if (mouse.modifiers & Qt.ShiftModifier) {
                                 newQuantity = 10;
+                            } else {
+                                newQuantity = 1;
                             }
 
                             if ((quantity+newQuantity)<0) {
-                                desiredQuantity.text = 0
-                            }
-                            else {
-                                desiredQuantity.text = quantity+newQuantity
+                                desiredQuantity.text = 0;
+                            } else if ((quantity+newQuantity)>60000) {
+                                    desiredQuantity.text = 60000;
+                            } else {
+                                desiredQuantity.text = quantity+newQuantity;
                             }
                         }
                     }
