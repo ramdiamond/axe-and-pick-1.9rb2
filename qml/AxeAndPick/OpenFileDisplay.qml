@@ -31,6 +31,7 @@ Item {
 
     function resetValidityMarker()
     {
+        directoryText.text = savesAccess.pathIsValid() ? savesAccess.getSavesPath() : "Timber and Stone 'saves.sav' file";
         directoryTextOutline.color = savesAccess.pathIsValid() ? "green" : "red";
         if( savesAccess.pathIsValid() )
         {
@@ -82,18 +83,6 @@ Item {
             height: 32
             color: "gray"
 
-//            Text {
-//                id: directoryTextTag
-//                text: "Timber and Stone 'saves.sav' file"
-//                color: "#FF303030"
-//                font.pixelSize: 11
-//                font.italic: true
-//                anchors.top: parent.top
-//                anchors.topMargin: 10
-//                anchors.left: parent.left
-//                anchors.leftMargin: 10
-//            }
-
             Rectangle {
                 id: directoryTextOutline
                 color: "gray"
@@ -105,8 +94,6 @@ Item {
                 anchors.rightMargin: 0
                 anchors.top: parent.top
                 anchors.topMargin: 4
-//                anchors.bottom: parent.bottom
-//                anchors.bottomMargin: 4
 
                 Rectangle {
                     id: directoryTextBackground

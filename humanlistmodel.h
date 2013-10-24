@@ -73,7 +73,9 @@ public:
 
         MoraleRole,
         FatigueRole,
-        HungerRole
+        HungerRole,
+
+        AdditionalRole
 
         // NOTE: Options and unknown quantities are yet to be added.
     };
@@ -330,12 +332,16 @@ private:
     Q_OBJECT
 
 public:
+    const static short HUMAN_FLAG = 0x01;
+    const static short MERCHANT_FLAG = 0x02;
+    const static short MIGRANT_FLAG = 0x03;
+
     HumanListModel(ListItem * prototype, QObject * parent = 0);
 
     Q_INVOKABLE void setData(const long id, const QVariant &value, int role = Human::ProfessionRole);
     Q_INVOKABLE void remove(const long id);
     Q_INVOKABLE float getFirstPosition(const char label);
-    Q_INVOKABLE void add(const QString profession, float x, float y, float z);
+    Q_INVOKABLE void add(const QString profession, float x, float y, float z, short flags = HUMAN_FLAG);
     Q_INVOKABLE void serveCoffee();
 };
 

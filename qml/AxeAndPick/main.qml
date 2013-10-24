@@ -47,20 +47,6 @@ Item {
                 width: 30
                 height: 1
             }
-//            ToolbarTextInput {
-//                id: dayInputButton
-//                textLabel: "Day"
-//                value: 0
-//                width: 45
-//                disabled: true
-//            }
-//            ToolbarTextInput {
-//                id: hourInputButton
-//                textLabel: "Hour"
-//                value: 0
-//                width: 38
-//                disabled: true
-//            }
         }
 
         Row {
@@ -71,25 +57,23 @@ Item {
             anchors.bottom: parent.bottom
 
             // Utility for doing things.
-            Image {
-                id: utilityButton
-                visible: false
-                source: "images/utilityButton.svg"
+            ToolbarImageButton {
+                id: settingsButton
+                target: parent
+                icon: "images/settingsIcon.svg"
+                color: "transparent"
                 MouseArea {
-                    id: utilityButtonArea
                     anchors.fill: parent
+                    hoverEnabled: true
+                    onEntered: { parent.color = "#0A000000" }
+                    onExited: { parent.color = "transparent" }
                     onClicked: {
-                        savesAccess.writeToMatlab(8);
+                        settingsDialog.enabled = true;
+                        settingsDialog.visible = true;
+                        // Unnecessary animation, right?
+                        //openFileButton.showClickAnimation();
                     }
                 }
-                states:
-                    State { // Pressed
-                        when: utilityButtonArea.pressed
-                        PropertyChanges {
-                            target: utilityButton
-                            source: "images/utilityButtonPressed.svg"
-                        }
-                    }
             }
 
             ToolbarImageButton {
@@ -110,6 +94,7 @@ Item {
                     }
                 }
             }
+
             ToolbarImageButton {
                 id: saveSavedGamesButton
                 target: parent
@@ -151,7 +136,6 @@ Item {
                 }
             }
         }
-
     }
 
     Item {
@@ -404,7 +388,7 @@ Item {
                     anchors.left: violentMobButton.right
                     anchors.verticalCenter: parent.verticalCenter
                     source: "images/migrantButton.svg"
-                    property bool selected: true
+                    property bool selected
                     MouseArea {
                         id: migrantButtonArea
                         anchors.fill: parent
@@ -694,6 +678,13 @@ Item {
         settingsObject: settings
     }
 
+    SettingsDisplay {
+        id: settingsDialog
+        visible: false
+        windowWidth: 300
+        settingsObject: settings
+    }
+
 
     //
     // Unit Types
@@ -872,6 +863,8 @@ Item {
                         humanModel.add(type,humanModel.getFirstPosition(0),humanModel.getFirstPosition(1),humanModel.getFirstPosition(2));
                     } else if (neutralMobModel.rowCount()) {
                         humanModel.add(type,neutralMobModel.getFirstPosition(0),neutralMobModel.getFirstPosition(1),neutralMobModel.getFirstPosition(2));
+                    } else if (migrantModel.rowCount()) {
+                        humanModel.add(type,migrantModel.getFirstPosition(0),migrantModel.getFirstPosition(1),migrantModel.getFirstPosition(2));
                     } else if (violentMobModel.rowCount()) {
                         humanModel.add(type,violentMobModel.getFirstPosition(0),violentMobModel.getFirstPosition(1),violentMobModel.getFirstPosition(2));
                     }
@@ -881,6 +874,8 @@ Item {
                         neutralMobModel.add(type,neutralMobModel.getFirstPosition(0),neutralMobModel.getFirstPosition(1),neutralMobModel.getFirstPosition(2));
                     } else if (humanModel.rowCount()) {
                         neutralMobModel.add(type,humanModel.getFirstPosition(0),humanModel.getFirstPosition(1),humanModel.getFirstPosition(2));
+                    } else if (migrantModel.rowCount()) {
+                        neutralMobModel.add(type,migrantModel.getFirstPosition(0),migrantModel.getFirstPosition(1),migrantModel.getFirstPosition(2));
                     } else if (violentMobModel.rowCount()) {
                         neutralMobModel.add(type,violentMobModel.getFirstPosition(0),violentMobModel.getFirstPosition(1),violentMobModel.getFirstPosition(2));
                     }
@@ -890,8 +885,21 @@ Item {
                         violentMobModel.add(type,subtype,violentMobModel.getFirstPosition(0),violentMobModel.getFirstPosition(1),violentMobModel.getFirstPosition(2));
                     } else if (neutralMobModel.rowCount()) {
                         violentMobModel.add(type,subtype,neutralMobModel.getFirstPosition(0),neutralMobModel.getFirstPosition(1),neutralMobModel.getFirstPosition(2));
+                    } else if (migrantModel.rowCount()) {
+                        violentMobModel.add(type,subtype,migrantModel.getFirstPosition(0),migrantModel.getFirstPosition(1),migrantModel.getFirstPosition(2));
                     } else if (humanModel.rowCount()) {
                         violentMobModel.add(type,subtype,humanModel.getFirstPosition(0),humanModel.getFirstPosition(1),humanModel.getFirstPosition(2));
+                    }
+                }
+                else if (migrantButton.selected) {
+                    if (migrantModel.rowCount()) {
+                        migrantModel.add(type,migrantModel.getFirstPosition(0),migrantModel.getFirstPosition(1),migrantModel.getFirstPosition(2), 0x02);
+                    } else if (humanModel.rowCount()) {
+                        migrantModel.add(type,humanModel.getFirstPosition(0),humanModel.getFirstPosition(1),humanModel.getFirstPosition(2), 0x02);
+                    } else if (neutralMobModel.rowCount()) {
+                        migrantModel.add(type,neutralMobModel.getFirstPosition(0),neutralMobModel.getFirstPosition(1),neutralMobModel.getFirstPosition(2), 0x02);
+                    } else if (violentMobModel.rowCount()) {
+                        migrantModel.add(type,violentMobModel.getFirstPosition(0),violentMobModel.getFirstPosition(1),violentMobModel.getFirstPosition(2), 0x02);
                     }
                 }
                 else { console.log("No unit type buttons are enabled. Where do I add this unit?") }

@@ -92,6 +92,10 @@ int main(int argc, char *argv[])
     Settings settings;
     viewer.rootContext()->setContextProperty("settings", &settings);
 
+    // Store our default values
+    settings.setValue("TimberAndStone/AutoBackupShort", settings.value("TimberAndStone/AutoBackupShort", true));
+    settings.setValue("TimberAndStone/AutoBackupFull", settings.value("TimberAndStone/AutoBackupFull", false));
+
     //
     // SAVED GAMES
     //

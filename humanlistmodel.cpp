@@ -594,6 +594,8 @@ QHash<int, QByteArray> Human::roleNames() const
     names[FatigueRole] = "fatigue";
     names[HungerRole] = "hunger";
 
+    names[AdditionalRole] = "additional";
+
     return names;
 }
 
@@ -697,6 +699,9 @@ QVariant Human::data(int role) const
     case HungerRole:
         return hunger();
 
+    case AdditionalRole:
+        return experience();
+
     default:
         return QVariant();
     }
@@ -782,7 +787,7 @@ float HumanListModel::getFirstPosition(const char label)
     return 0.0;
 }
 
-void HumanListModel::add(const QString profession, float x, float y, float z)
+void HumanListModel::add(const QString profession, float x, float y, float z, short flags)
 {
     int high = 5;
     int low = 1;

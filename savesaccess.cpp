@@ -135,7 +135,6 @@ void SavesAccess::setSavedGameListModel(SavedGameListModel * model)
     savedGameModel = model;
 }
 
-
 // =====================
 // RESOURCES
 // =====================

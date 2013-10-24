@@ -81,7 +81,7 @@ Component {
                 id: deleteButtonArea
                 anchors.fill: parent
                 onClicked: {
-                    humanModel.remove(id)
+                    migrantModel.remove(id)
                 }
             }
             states:
@@ -93,15 +93,5 @@ Component {
                     }
                 }
         }
-
-
-//        // Item seperator
-//        Rectangle {
-//            anchors.left: parent.left
-//            anchors.right: parent.right
-//            anchors.bottom: parent.bottom
-//            height: 1
-//            color: "#FFE3E3E3"
-//        }
     }
 }
