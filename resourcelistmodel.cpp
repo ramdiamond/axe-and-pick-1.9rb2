@@ -11,7 +11,7 @@ Resource::Resource(const QString &name,
                    const long &quantity,
                    QObject * parent)
     : ListItem(parent),
-      m_id(id_counter),
+      m_id(id_counter), // Gawd, don't forget this in our other lists! Spent halve a day with id bugs in the SavedGames list before I noticed the error XD This id isn't part of QT it's ours to take care of!
       m_name(name),
       m_type(type),
       m_quantity(quantity)

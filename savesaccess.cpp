@@ -1,4 +1,6 @@
 #include "savesaccess.h"
+#include "settings.h"
+#include "main.h"
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QFileDialog>
@@ -38,52 +40,35 @@ void SavesAccess::openFileDialog()
     // Not sure if this is the cause of the weird Windows behavior
     // or not. Something to try.
     QFileDialog fileDialog(0,"Timber and Stone saves.sav file");
-    fileDialog.setDirectory(rootSavesDirectory);
+    fileDialog.setDirectory(g_pSettings->getSavesDirectory());
     fileDialog.setNameFilter("Saves File (saves.sav)");
 
     // Open the file dialog so the user can select the saves.sav file.
     if (fileDialog.exec())
     {
+        QDir rootSavesDirectory;
         rootSavesDirectory.setPath(fileDialog.selectedFiles().first());
         rootSavesDirectory.cdUp(); // This trims off the saves.sav file.
+        g_pSettings->setSavesDirectory(rootSavesDirectory.absolutePath());
     }
-}
-
-
-// NOTE: Qml access this for types that are explicitly typed in.
-void SavesAccess::setFilePath(QString path)
-{
-    // Save the path to the file.
-    rootSavesDirectory.setPath(path);
-    rootSavesDirectory.cdUp();
-}
-
-QString SavesAccess::getSavesPath()
-{
-    return (rootSavesDirectory.absolutePath() + "/" + "saves.sav");
 }
 
 bool SavesAccess::pathIsValid()
 {
     // Return True if both the directory path is valid
     // and the saves.sav file exists.
-    QFile savedGameFile(getSavesPath());
-    QFileInfo fileInfo(savedGameFile);
-    if (savedGameFile.exists() && (fileInfo.fileName() == "saves.sav"))
-    {
+    QFile savedGameFile(g_pSettings->getSavesDirectory() + "/saves.sav");
+
+    if (savedGameFile.exists())
         return true;
-    }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 void SavesAccess::loadGamesList()
 {
     // Save the file name.
-    QFile savedGameFile(rootSavesDirectory.absolutePath()
-                        + "/" + "saves.sav");
+    QFile savedGameFile(g_pSettings->getSavesDirectory() + "/saves.sav");
 
     if (savedGameModel == Q_NULLPTR)
     {
@@ -117,17 +102,25 @@ void SavesAccess::loadGamesList()
             strings = in.readLine().split("/", QString::KeepEmptyParts);
 
             // Add the games to the list.
-            savedGameModel->appendRow(new SavedGame(strings[0],
-                                 strings[3],
-                                 strings[4],
-                                 strings[1].toLongLong(),
-                                 strings[2].toLongLong()));
+            savedGameModel->appendRow(new SavedGame(
+                    strings[0],
+                    strings[3],
+                    strings[4],
+                    strings[1].toLongLong(),
+                    strings[2].toLongLong(),
+                    true
+                ));
         }
     }
 
     // It's important to always close the file after reading/writing, so this
     // app can remain running while Timber and Stone saves as it wishes.
     savedGameFile.close();
+
+    /* TODO:
+     *
+     * Add code to check for proper save game directory structure
+     */
 }
 
 void SavesAccess::setSavedGameListModel(SavedGameListModel * model)
@@ -146,7 +139,7 @@ void SavesAccess::setResourceListModel(ResourceListModel * model)
 
 void SavesAccess::loadResourceFile()
 {
-    QFile resourceFile(rootSavesDirectory.absolutePath()
+    QFile resourceFile(g_pSettings->getSavesDirectory()
                        + "/" + selectedSaveName
                        + "/" + "re.sav");
 
@@ -159,8 +152,13 @@ void SavesAccess::loadResourceFile()
     // Open file and make sure it went okay.
     if (!resourceFile.exists() || !resourceFile.open(QFile::ReadOnly))
     {
+        qDebug() << g_pSettings->getSavesDirectory()
+                    + "/" + selectedSaveName
+                    + "/" + "re.sav";
+
         QString message = "I can't load the re.sav file! Is it missing? Saving is disabled.";
         emit fileLoadStatusChanged(true, message);
+
 
         return;
     }
@@ -254,7 +252,7 @@ void SavesAccess::saveResourceFile()
         return;
     }
 
-    QFile resourceFile(rootSavesDirectory.absolutePath()
+    QFile resourceFile(g_pSettings->getSavesDirectory()
                        + "/" + selectedSaveName
                        + "/" + "re.sav");
 
@@ -321,7 +319,7 @@ void SavesAccess::loadUnitFile()
     QString message;
 
     // Compose the file name.
-    QFile unitFile(rootSavesDirectory.absolutePath()
+    QFile unitFile(g_pSettings->getSavesDirectory()
                    + "/" + selectedSaveName
                    + "/" + "un.sav");
 
@@ -463,7 +461,7 @@ void SavesAccess::saveUnitFile()
         return;
     }
 
-    QFile unitFile(rootSavesDirectory.absolutePath()
+    QFile unitFile(g_pSettings->getSavesDirectory()
                        + "/" + selectedSaveName
                        + "/" + "un.sav");
 
@@ -529,12 +527,12 @@ void SavesAccess::writeToMatlab(int squareSize)
     qDebug() << "Opening file...";
 
     // Create a new file for storing all these points. Comma seperated.
-    QFile matlabFile(rootSavesDirectory.absolutePath()
+    QFile matlabFile(g_pSettings->getSavesDirectory()
                     + "/" + selectedSaveName
                     + "/" + "cd.dat");
     matlabFile.open(QFile::WriteOnly);
 
-    QFile worldFile(rootSavesDirectory.absolutePath()
+    QFile worldFile(g_pSettings->getSavesDirectory()
                     + "/" + selectedSaveName
                     + "/" + "cd.sav");
     worldFile.open(QFile::ReadOnly);

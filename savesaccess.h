@@ -22,7 +22,6 @@ public:
     Q_INVOKABLE void loadSavedGame(QString gameName);
     Q_INVOKABLE void saveSavedGame();
 private:
-    QDir rootSavesDirectory;
     QString selectedSaveName;
 
 signals:
@@ -35,10 +34,9 @@ signals:
 public:
     void setSavedGameListModel(SavedGameListModel * model);
     Q_INVOKABLE void openFileDialog();
-    Q_INVOKABLE QString getSavesPath();
-    Q_INVOKABLE void setFilePath(QString path);
     Q_INVOKABLE bool pathIsValid();
     Q_INVOKABLE void loadGamesList();
+
 private:
     SavedGameListModel * savedGameModel;
 
@@ -48,6 +46,7 @@ private:
     //
 public:
     void setResourceListModel(ResourceListModel * model);
+
 private:
     void loadResourceFile();
     void saveResourceFile();
@@ -66,11 +65,10 @@ public:
     void setViolentMobModel(ViolentMobListModel * model);
     void setMigrantModel(HumanListModel * model);
 
-
+private:
     void loadUnitFile();
     void saveUnitFile();
 
-private:
     HumanListModel * humanModel;
     NeutralMobListModel * neutralMobModel;
     ViolentMobListModel * violentMobModel;

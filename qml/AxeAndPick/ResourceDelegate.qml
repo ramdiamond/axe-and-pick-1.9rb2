@@ -102,11 +102,15 @@ Component {
 
                         onClicked: {
                             var newQuantity;
-                            if (mouse.modifiers & Qt.ShiftModifier) {
+                            // If Modifier+Click, add n instead of 1.
+                            if (mouse.modifiers & Qt.ControlModifier) {
+                                newQuantity = 1000;
+                            } else if (mouse.modifiers & Qt.AltModifier) {
                                 newQuantity = 100;
-                            }
-                            else {
+                            } else if (mouse.modifiers & Qt.ShiftModifier) {
                                 newQuantity = 10;
+                            } else {
+                                newQuantity = 1;
                             }
 
                             if ((quantity-newQuantity)<0) {
@@ -184,9 +188,7 @@ Component {
                         onClicked: {
                             var newQuantity;
                             // If Modifier+Click, add n instead of 1.
-                            if (mouse.modifiers & Qt.ShiftModifier & Qt.AltModifier & Qt.ControlModifier) {
-                                newQuantity = 10000;
-                            } else if (mouse.modifiers & Qt.ControlModifier) {
+                            if (mouse.modifiers & Qt.ControlModifier) {
                                 newQuantity = 1000;
                             } else if (mouse.modifiers & Qt.AltModifier) {
                                 newQuantity = 100;

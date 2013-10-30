@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import SavedGame 1.0
 
 // This is the component that displays each resource in the list
 Component {
@@ -8,7 +9,7 @@ Component {
     Rectangle {
 
         color: "#FFeeeeee"
-        height: 72
+        height: 102
         anchors.left: parent.left
         anchors.right: parent.right
 
@@ -29,8 +30,8 @@ Component {
                 savesAccess.loadSavedGame( name );
 
                 // Set the game data
-                saveGameName.text = model.name;
-                saveGameDate.text = model.date;
+                saveGameName.text = name;
+                saveGameDate.text = date;
                 //dayInputButton.value = model.day;
 
                 // Close the dialog
@@ -51,7 +52,7 @@ Component {
 
             Text {
                 id: nameText
-                text: model.name
+                text: name
 
                 anchors.top: parent.top
                 anchors.left: parent.left
@@ -64,7 +65,7 @@ Component {
             }
             Text {
                 id: dateText
-                text: model.date
+                text: date
 
                 anchors.top: nameText.bottom
                 anchors.left: parent.left
@@ -96,6 +97,7 @@ Component {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
+                anchors.bottomMargin: 30;
                 width: childrenRect.width + 12
 
                 border.width: 1
@@ -109,7 +111,7 @@ Component {
                     anchors.topMargin: (parent.height - font.pixelSize)/2 - 2
 
                     //anchors.horizontalCenter: parent.horizontalCenter
-                    text: model.worldSize
+                    text: worldSize
                     font.pointSize: 10
                     color: "#FF565656"
                 }
@@ -122,6 +124,7 @@ Component {
                 anchors.left: worldSizeText.right
                 anchors.leftMargin: -1
                 anchors.bottom: parent.bottom
+                anchors.bottomMargin: 30;
                 width: childrenRect.width + 12
 
                 border.width: 1
@@ -143,7 +146,7 @@ Component {
                     anchors.top: parent.top
                     anchors.topMargin: (parent.height - font.pixelSize)/2 - 2
 
-                    text: model.day
+                    text: day
                     font.pointSize: 10
                     color: "#FF565656"
                 }
@@ -156,6 +159,7 @@ Component {
                 anchors.left: dayCountContainer.right
                 anchors.leftMargin: -1
                 anchors.bottom: parent.bottom
+                anchors.bottomMargin: 30;
                 width: childrenRect.width + 12
 
                 border.width: 1
@@ -176,12 +180,39 @@ Component {
                     anchors.top: parent.top
                     anchors.topMargin: (parent.height - font.pixelSize)/2 - 2
 
-                    text: model.unitNumber
+                    text: unitNumber
                     font.pointSize: 10
                     color: "#FF565656"
                 }
             }
         }
 
+        Rectangle {
+            color: "#FFeeeeee"
+            height: 30
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+
+            Checkbox {
+                id: storedInSavesCheckboxId;
+                anchors.fill: parent;
+
+                color: "transparent";
+
+                checkboxText: "Show in T&S Loading menu"
+                checked: storeInSaves;
+
+                MouseArea {
+                    anchors.fill: parent;
+                    drag.filterChildren: true;
+                    onClicked: {
+                        //model.invertStoreInSaves();
+                        savedGameModel.setData(id, !storeInSaves, SavedGame.StoreInSavesRole);
+                        storedInSavesCheckboxId.checked = storeInSaves;
+                    }
+                }
+            }
+        }
     }
 }

@@ -55,9 +55,6 @@ Rectangle {
                 autoScroll: true
                 selectByMouse: true
                 font.pixelSize: 16
-                onTextChanged: {
-                    //resourceModel.setData(identification, parseInt(text,10))
-                }
             }
         }
     }

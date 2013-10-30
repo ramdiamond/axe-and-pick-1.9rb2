@@ -3,19 +3,25 @@
 #include <QDebug>
 #include <sstream>
 
+long SavedGame::id_counter = 0;
+
 SavedGame::SavedGame(const QString &gameName,
                      const QString &lastPlayed,
                      const QString &worldSize,
                      const long &day,
                      const long &unitNumber,
+                     const bool &storeInSaves,
                      QObject * parent)
     : ListItem(parent),
       m_name(gameName),
       m_date(lastPlayed),
       m_worldSize(worldSize),
       m_day(day),
-      m_unitNumber(unitNumber)
+      m_unitNumber(unitNumber),
+      m_bStoreInSaves(storeInSaves),
+      m_id(id_counter) // Gawd dang, don't forget about this variable in other list objects, or the QML scripts will give you random values for id!!!
 {
+    id_counter++;
 }
 
 void SavedGame::setDay(long newDay)
@@ -34,6 +40,15 @@ void SavedGame::setUnitNumber(long newUnitNumber)
         emit dataChanged();
     }
 }
+void SavedGame::setStoreInSaves(bool newStoreInSaves)
+{
+    // TODO: store this into saves.sav or remove from saves.sav
+    if(m_bStoreInSaves != newStoreInSaves)
+    {
+        m_bStoreInSaves = newStoreInSaves;
+        emit dataChanged();
+    }
+}
 
 QHash<int, QByteArray> SavedGame::roleNames() const
 {
@@ -43,6 +58,7 @@ QHash<int, QByteArray> SavedGame::roleNames() const
     names[WorldSize] = "worldSize";
     names[DayRole] = "day";
     names[UnitNumberRole] = "unitNumber";
+    names[StoreInSavesRole] = "storeInSaves";
     names[IdRole] = "id";
     names[FilterStringRole] = "filterString";
 
@@ -62,6 +78,8 @@ QVariant SavedGame::data(int role) const
         return (int)day();
     case UnitNumberRole:
         return (int)unitNumber();
+    case StoreInSavesRole:
+        return (bool)storeInSaves();
     case IdRole:
         return (int)id();
     case FilterStringRole:
@@ -104,8 +122,19 @@ void SavedGameListModel::setData(const long identification, const QVariant &valu
         item->setUnitNumber(value.toLongLong());
         break;
     }
+    case SavedGame::StoreInSavesRole:
+    {
+        SavedGame * item = (SavedGame *)find(identification);
+        item->setStoreInSaves(value.toBool());
+        break;
+    }
     default:
         qWarning() << "SavedGameListModel::setData does not understand what role" << role << "is.";
         break;
     }
+}
+
+void SavedGameListModel::invertStoreInSaves(const long id) {
+    SavedGame * item = (SavedGame *)find(id);
+    item->setStoreInSaves(!item->getStoreInSaves());
 }

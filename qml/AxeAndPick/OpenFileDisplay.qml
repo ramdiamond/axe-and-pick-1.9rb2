@@ -31,7 +31,7 @@ Item {
 
     function resetValidityMarker()
     {
-        directoryText.text = savesAccess.pathIsValid() ? savesAccess.getSavesPath() : "Timber and Stone 'saves.sav' file";
+        directoryText.text = settings.getSavesDirectory();
         directoryTextOutline.color = savesAccess.pathIsValid() ? "green" : "red";
         if( savesAccess.pathIsValid() )
         {
@@ -116,12 +116,9 @@ Item {
                             centerIn: parent;
                         }
 
-                        text: savesAccess.pathIsValid() ? savesAccess.getSavesPath() : "Timber and Stone 'saves.sav' file";
+                        text: settings.getSavesDirectory();
                         onTextChanged: {
-                            settings.setValue("TimberAndStone/GameInstallationDirectory",
-                                              text);
-                            savesAccess.setFilePath(text);
-
+                            settings.setSavesDirectory(text);
                             resetValidityMarker();
                         }
 
@@ -142,7 +139,7 @@ Item {
                         onClicked: {
                             // Open the file dialog
                             savesAccess.openFileDialog();
-                            directoryText.text = savesAccess.getSavesPath();
+                            directoryText.text = settings.getSavesDirectory();
                         }
                     }
                     states:

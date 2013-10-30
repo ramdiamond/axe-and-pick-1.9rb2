@@ -9,10 +9,11 @@
 #include <QTime>
 #include "qtquick2applicationviewer.h"
 
+#include "settings.h"
+#include "main.h"
 #include "resourcelistmodel.h"
 #include "humanlistmodel.h"
 #include "savedgamelistmodel.h"
-#include "settings.h"
 #include "savesaccess.h"
 
 #define TESTING 0
@@ -34,9 +35,12 @@ QString appVersion()
     // 1.8 - updated for T&S 1.3 (and some other tweaks)
     // 1.9 - updated for T&S 1.4
     // 1.9r - updated for T&S 1.42 by ramdiamond
+    // 1.43.1 - Start of major rewrites, and updated for T&S 1.43 by ramdiamond
     //
-    return "1.9r (for T&S v1.4) BETA 2";
+    return "1.43.1";
 }
+
+Settings* g_pSettings = Q_NULLPTR;
 
 int main(int argc, char *argv[])
 {
@@ -87,21 +91,18 @@ int main(int argc, char *argv[])
 
     // Register the list item types for the enumerations in QML
     qmlRegisterType<Resource>("Resource", 1,0, "Resource");
+    qmlRegisterType<SavedGame>("SavedGame", 1,0, "SavedGame");
 
     // Load and create the settings. Give QML access.
     Settings settings;
-    viewer.rootContext()->setContextProperty("settings", &settings);
-
-    // Store our default values
-    settings.setValue("TimberAndStone/AutoBackupShort", settings.value("TimberAndStone/AutoBackupShort", true));
-    settings.setValue("TimberAndStone/AutoBackupFull", settings.value("TimberAndStone/AutoBackupFull", false));
+    g_pSettings = &settings;
+    viewer.rootContext()->setContextProperty("settings", g_pSettings);
 
     //
     // SAVED GAMES
     //
     // This holds the info for all the saved games.
     SavesAccess savesAccess;
-    savesAccess.setFilePath(settings.value("TimberAndStone/GameInstallationDirectory").toString());
     SavedGameListModel * savedGameModel = new SavedGameListModel(new SavedGame, qApp);
     savesAccess.setSavedGameListModel(savedGameModel);
     savesAccess.loadGamesList();

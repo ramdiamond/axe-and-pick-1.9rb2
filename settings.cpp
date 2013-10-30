@@ -9,18 +9,25 @@ Settings::Settings(QObject *parent)
                     QCoreApplication::instance()->applicationName(),
                     parent)
 {
+    m_bAutoBackupShort = value("TimberAndStone/AutoBackupShort", true).toBool();
+    m_bAutoBackupLong = value("TimberAndStone/AutoBackupLong", false).toBool();
+
+    m_sSavesDirectory = value("TimberAndStone/GameInstallationDirectory", "").toString();
+
+    // Keep the settings file clean, but don't lose old data :)
+    if (m_sSavesDirectory.toStdString() != "") {
+        setValue("TimberAndStone/SavesDirectory", m_sSavesDirectory);
+        remove("TimberAndStone/GameInstallationDirectory");
+    } else {
+        m_sSavesDirectory = value("TimberAndStone/SavesDirectory", "Timber and Stone 'saves.sav' file").toString();
+    }
 }
 
-void Settings::setValue(const QString &key,
-                        const QVariant &value)
-{
-    QSettings::setValue(key, value);
-}
+Settings::~Settings() {
+    setValue("TimberAndStone/AutoBackupShort", m_bAutoBackupShort);
+    setValue("TimberAndStone/AutoBackupLong", m_bAutoBackupLong);
 
-QVariant Settings::value(const QString &key,
-                         const QVariant &defaultValue) const
-{
-    return QSettings::value(key, defaultValue);
+    setValue("TimberAndStone/SavesDirectory", m_sSavesDirectory);
 }
 
 Q_DECLARE_METATYPE(Settings*)

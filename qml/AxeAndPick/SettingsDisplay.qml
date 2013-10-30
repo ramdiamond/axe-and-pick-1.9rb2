@@ -31,10 +31,10 @@ Item {
 
     function resetValidityMarker()
     {
-        autoBackupShortCheckboxId.checked = settings.value("TimberAndStone/AutoBackupShort");
-        autoBackupFullCheckboxId.checked = settings.value("TimberAndStone/AutoBackupFull");
+        autoBackupShortCheckboxId.checked = settings.getAutoBackupShort();
+        autoBackupLongCheckboxId.checked = settings.getAutoBackupLong();
 
-        directoryText.text = savesAccess.pathIsValid() ? savesAccess.getSavesPath() : "Timber and Stone 'saves.sav' file";
+        directoryText.text = settings.getSavesDirectory();
         directoryTextOutline.color = savesAccess.pathIsValid() ? "green" : "red";
         if( savesAccess.pathIsValid() )
         {
@@ -158,12 +158,9 @@ Item {
                             centerIn: parent;
                         }
 
-                        text: savesAccess.pathIsValid() ? savesAccess.getSavesPath() : "Timber and Stone 'saves.sav' file";
+                        text: settings.getSavesDirectory();
                         onTextChanged: {
-                            settings.setValue("TimberAndStone/GameInstallationDirectory",
-                                              text);
-                            savesAccess.setFilePath(text);
-
+                            settings.setSavesDirectory(text);
                             resetValidityMarker();
                         }
 
@@ -184,7 +181,7 @@ Item {
                         onClicked: {
                             // Open the file dialog
                             savesAccess.openFileDialog();
-                            directoryText.text = savesAccess.getSavesPath();
+                            directoryText.text = settings.getSavesDirectory();
                         }
                     }
                     states:
@@ -245,108 +242,49 @@ Item {
                         font.pointSize: 10
                     }
                 }
+            }
 
-                Rectangle {
-                    id: autoBackupCheckboxOutline
-                    color: "#FFa0a0a0"
-                    height: 24
+            Checkbox {
+                id: autoBackupShortCheckboxId;
+                anchors.top: autoBackupTitleOutline.bottom;
+                anchors.left: parent.left;
+                anchors.right: parent.right;
+                height: 30;
 
-                    anchors.left: parent.left
-                    anchors.leftMargin: 0
-                    anchors.right: parent.right
-                    anchors.rightMargin: 0
-                    anchors.top: autoBackupTitleBackground.bottom
-                    anchors.topMargin: 4
+                //color: "transparent";
 
-                    Rectangle {
-                        id: autoBackupShortCheckboxBackground
-                        color: "#FFf8f8f8"
-                        height: parent.height-2
+                checkboxText: "Backup re.sav and un.sav (Recommened)";
+                checked: settings.getAutoBackupShort();
 
-                        clip: true
-                        anchors.left: parent.left
-                        anchors.leftMargin: 1
-                        anchors.right: parent.right
-                        anchors.rightMargin: 1
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        Checkbox {
-                            id: autoBackupShortCheckboxId
-                            width: autoBackupTitleBackground.width-12
-                            anchors {
-                                left: parent.left;
-                                right: parent.right;
-                                centerIn: parent;
-                            }
-
-                            checkboxText: "Backup re.sav and un.sav (Recommened)";
-                            checked: settings.value("TimberAndStone/AutoBackupShort");
-                            target: autoBackupShortCheckboxId
-
-                        }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onEntered: { autoBackupShortCheckboxBackground.color = "#ffc8c8c8" }
-                        onExited: { autoBackupShortCheckboxBackground.color = "#FFf8f8f8" }
-                        onClicked: {
-                            settings.setValue("TimberAndStone/AutoBackupShort", (! settings.value("TimberAndStone/AutoBackupShort")));
-                            autoBackupShortCheckboxId.checked = settings.value("TimberAndStone/AutoBackupFull");
-                        }
+                MouseArea {
+                    anchors.fill: parent;
+                    drag.filterChildren: true;
+                    onClicked: {
+                        settings.invertAutoBackupShort();
+                        autoBackupShortCheckboxId.checked = settings.getAutoBackupShort();
                     }
                 }
+            }
 
-                Rectangle {
-                    id: autoBackupFullCheckboxOutline
-                    color: "gray"
-                    height: 24
+            Checkbox {
+                id: autoBackupLongCheckboxId;
+                anchors.top: autoBackupShortCheckboxId.bottom;
+                anchors.left: parent.left;
+                anchors.right: parent.right;
+                height: 30;
 
-                    anchors.left: parent.left
-                    anchors.leftMargin: 0
-                    anchors.right: parent.right
-                    anchors.rightMargin: 0
-                    anchors.top: autoBackupCheckboxOutline.bottom
-                    anchors.topMargin: 4
+                color: "transparent";
 
-                    Rectangle {
-                        id: autoBackupFullCheckboxBackground
-                        color: "#FFf8f8f8"
-                        height: parent.height-2
+                checkboxText: "Backup saves dir (Not Recommended)";
+                checked: settings.getAutoBackupLong();
 
-                        clip: true
-                        anchors.left: parent.left
-                        anchors.leftMargin: 1
-                        anchors.right: parent.right
-                        anchors.rightMargin: 1
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        Checkbox {
-                            id: autoBackupFullCheckboxId
-                            width: autoBackupTitleBackground.width-12
-                            anchors {
-                                left: parent.left;
-                                right: parent.right;
-                                centerIn: parent;
-                            }
-
-                            checkboxText: "Backup full save game (Overkill)";
-                            checked: settings.value("TimberAndStone/AutoBackupFull");
-                            target: autoBackupFullCheckboxId
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            onEntered: { autoBackupFullCheckboxBackground.color = "#ffc8c8c8" }
-                            onExited: { autoBackupFullCheckboxBackground.color = "#FFf8f8f8" }
-                            onClicked: {
-                                settings.setValue("TimberAndStone/AutoBackupFull", (! settings.value("TimberAndStone/AutoBackupFull")));
-                                autoBackupFullCheckboxId.checked = settings.value("TimberAndStone/AutoBackupFull");
-                            }
-                        }
+                MouseArea {
+                    anchors.fill: parent;
+                    drag.filterChildren: true;
+                    onClicked: {
+                        settings.invertAutoBackupLong();
+                        autoBackupLongCheckboxId.checked = settings.getAutoBackupLong();
                     }
-
                 }
             }
         }
