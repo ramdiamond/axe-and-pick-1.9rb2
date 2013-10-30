@@ -12,6 +12,8 @@ Settings::Settings(QObject *parent)
     m_bAutoBackupShort = value("TimberAndStone/AutoBackupShort", true).toBool();
     m_bAutoBackupLong = value("TimberAndStone/AutoBackupLong", false).toBool();
 
+    m_iMaxBackup = value("TimberAndStone/MaxBackup", 10).toInt();
+
     m_sSavesDirectory = value("TimberAndStone/GameInstallationDirectory", "").toString();
 
     // Keep the settings file clean, but don't lose old data :)
@@ -26,6 +28,8 @@ Settings::Settings(QObject *parent)
 Settings::~Settings() {
     setValue("TimberAndStone/AutoBackupShort", m_bAutoBackupShort);
     setValue("TimberAndStone/AutoBackupLong", m_bAutoBackupLong);
+
+    setValue("TimberAndStone/MaxBackup", m_iMaxBackup);
 
     setValue("TimberAndStone/SavesDirectory", m_sSavesDirectory);
 }

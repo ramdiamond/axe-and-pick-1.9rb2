@@ -19,8 +19,8 @@ class SavesAccess : public QObject
 public:
     explicit SavesAccess(QObject *parent = 0);
 
-    Q_INVOKABLE void loadSavedGame(QString gameName);
-    Q_INVOKABLE void saveSavedGame();
+    Q_INVOKABLE bool loadSavedGame(QString gameName);
+    Q_INVOKABLE bool saveSavedGame();
 private:
     QString selectedSaveName;
 
@@ -48,8 +48,8 @@ public:
     void setResourceListModel(ResourceListModel * model);
 
 private:
-    void loadResourceFile();
-    void saveResourceFile();
+    bool loadResourceFile();
+    bool saveResourceFile();
 
     ResourceListModel * resourceModel;
 
@@ -66,8 +66,8 @@ public:
     void setMigrantModel(HumanListModel * model);
 
 private:
-    void loadUnitFile();
-    void saveUnitFile();
+    bool loadUnitFile();
+    bool saveUnitFile();
 
     HumanListModel * humanModel;
     NeutralMobListModel * neutralMobModel;

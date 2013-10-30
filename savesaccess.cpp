@@ -10,27 +10,121 @@
 SavesAccess::SavesAccess(QObject *parent) :
     QObject(parent),
     savedGameModel(Q_NULLPTR),
-    resourceModel(Q_NULLPTR)
+    resourceModel(Q_NULLPTR),
+    humanModel(Q_NULLPTR),
+    neutralMobModel(Q_NULLPTR),
+    violentMobModel(Q_NULLPTR),
+    migrantModel(Q_NULLPTR)
 {
 }
 
 // Sets the path and loads the game.
-void SavesAccess::loadSavedGame(QString gameName)
+bool SavesAccess::loadSavedGame(QString gameName)
 {
+    bool ret;
+
     // Set the game name.
     selectedSaveName = gameName;
 
     // Pull the resources into the list.
-    loadResourceFile();
-    loadUnitFile();
+    ret = loadResourceFile();
+    ret |= loadUnitFile();
+
+    return ret;
 }
 
-void SavesAccess::saveSavedGame()
+bool SavesAccess::saveSavedGame()
 {
-    saveResourceFile();
-    saveUnitFile();
-    //saveTimeToFile();
-    //saveGameOverviewToFile();
+    if (g_pSettings->getAutoBackupShort()) {
+        int numBackups = 0;
+        QDir saveDir;
+
+        saveDir.setFilter(QDir::Files | QDir::Hidden | QDir::Readable);
+        saveDir = g_pSettings->getSavesDirectory() + "/" + selectedSaveName;
+        if (!saveDir.exists()) {
+            QString message = "Saving failed! Check to make sure the save game directory exists, and has proper permissions.";
+            emit fileSaveStatusChanged(true, message);
+
+            return true;
+        }
+
+        QFileInfoList list = saveDir.entryInfoList();
+        for (int i = 0; i < list.size(); ++i) {
+            QFileInfo fileInfo = list.at(i);
+            QStringList fileNameList = fileInfo.fileName().split(".");
+            if (fileNameList.length() == 3) {
+                if (fileNameList.at(0) == "re" || fileNameList.at(0) == "un") {
+                    if /*(fileNameList.at(1) == "sav") {
+                        if (numBackups == 0) numBackups = 0;
+                    } else*/ (fileNameList.at(2) == "sav") {
+                        if (fileNameList.at(1).toInt() > numBackups) {
+                            numBackups = fileNameList.at(1).toInt();
+                        }
+                    }
+                }
+            }
+        }
+
+        numBackups++; // We're the next auto backup short number.
+        QString fileOffset, fileOffsetMinus;
+
+        if (numBackups > g_pSettings->getMaxBackup()) {
+            // Now we can go back a bit :)
+            numBackups = g_pSettings->getMaxBackup();
+
+            if (! (QFile::remove(saveDir.filePath("re.1.sav"))) ) {
+                QString message = "I can't delete the re.1.sav file!";
+                qDebug() << message;
+                emit fileSaveStatusChanged(true, message);
+            }
+
+            if (! (QFile::remove(saveDir.filePath("un.1.sav"))) ) {
+                QString message = "I can't delete the un.1.sav file!";
+                qDebug() << message;
+                emit fileSaveStatusChanged(true, message);
+            }
+
+            for (int i = 2; i<=numBackups; i++) {
+                fileOffset.setNum(i);
+                fileOffsetMinus.setNum(i-1);
+                if (! (QFile::rename(saveDir.filePath("re." + fileOffset + ".sav"), saveDir.filePath("re." + fileOffsetMinus + ".sav"))) ) {
+                    QString message = "I can't backup the source file \"re." + fileOffset + ".sav\" to the dest file \"re." + fileOffsetMinus + ".sav\"";
+                    qDebug() << 1 << message;
+                    emit fileSaveStatusChanged(true, message);
+                }
+                if (! (QFile::rename(saveDir.filePath("un." + fileOffset + ".sav"), saveDir.filePath("un." + fileOffsetMinus + ".sav"))) ) {
+                    QString message = "I can't backup the source file \"un." + fileOffset + ".sav\" to the dest file \"un." + fileOffsetMinus + ".sav\"";
+                    qDebug() << 2 << message;
+                    emit fileSaveStatusChanged(true, message);
+                }
+            }
+        }
+
+        fileOffset.setNum(numBackups);
+
+        if (! (QFile::copy(saveDir.filePath("re.sav"), saveDir.filePath("re." + fileOffset + ".sav"))) ) {
+            QString message = "I can't backup the source file \"re.sav\" to the dest file \"re." + fileOffset + ".sav\"";
+            qDebug() << message;
+            emit fileSaveStatusChanged(true, message);
+        }
+        if (! (QFile::copy(saveDir.filePath("un.sav"), saveDir.filePath("un." + fileOffset + ".sav"))) ) {
+            QString message = "I can't backup the source file \"un.sav\" to the dest file \"un." + fileOffset + ".sav\"";
+            qDebug() << message;
+            emit fileSaveStatusChanged(true, message);
+        }
+    }
+
+    if (g_pSettings->getAutoBackupLong()) {
+        // TODO: this :P
+        QString message = "Auto-backup Long not supported atm.";
+        qDebug() << message;
+        emit fileSaveStatusChanged(true, message);
+    }
+
+    if (saveResourceFile() | saveUnitFile())
+        return true;
+
+    return false;
 }
 
 void SavesAccess::openFileDialog()
@@ -137,7 +231,7 @@ void SavesAccess::setResourceListModel(ResourceListModel * model)
     resourceModel = model;
 }
 
-void SavesAccess::loadResourceFile()
+bool SavesAccess::loadResourceFile()
 {
     QFile resourceFile(g_pSettings->getSavesDirectory()
                        + "/" + selectedSaveName
@@ -146,7 +240,7 @@ void SavesAccess::loadResourceFile()
     if (resourceModel == Q_NULLPTR)
     {
         qDebug() << "Resource model hasn't been set up yet.";
-        return;
+        return true;
     }
 
     // Open file and make sure it went okay.
@@ -160,7 +254,7 @@ void SavesAccess::loadResourceFile()
         emit fileLoadStatusChanged(true, message);
 
 
-        return;
+        return true;
     }
     else
     {
@@ -222,16 +316,19 @@ void SavesAccess::loadResourceFile()
         {
             QString message = "I can't load the resource_list.csv file! Is it missing? Saving is disabled.";
             emit fileLoadStatusChanged(true, message);
+
+            return true;
         }
 
         assetFile.close();
         resourceFile.close();
     }
 
+    return false;
 }
 
 
-void SavesAccess::saveResourceFile()
+bool SavesAccess::saveResourceFile()
 {
     //
     // Ha ha ha! Man, I'm hilarious.
@@ -249,7 +346,7 @@ void SavesAccess::saveResourceFile()
             || resourceModel->rowCount() <= 0)
     {
         qDebug() << "The resource model hasn't been populated.";
-        return;
+        return true;
     }
 
     QFile resourceFile(g_pSettings->getSavesDirectory()
@@ -262,7 +359,7 @@ void SavesAccess::saveResourceFile()
         QString message = "Saving failed! Check to make sure the re.sav file isn't open in another program.";
         emit fileSaveStatusChanged(true, message);
 
-        return;
+        return true;
     }
     else
     {
@@ -290,6 +387,8 @@ void SavesAccess::saveResourceFile()
         resourceFile.write(resourceExtraData);
         resourceFile.close();
     }
+
+    return false;
 }
 
 // =====================
@@ -313,7 +412,7 @@ void SavesAccess::setMigrantModel(HumanListModel * model)
     migrantModel = model;
 }
 
-void SavesAccess::loadUnitFile()
+bool SavesAccess::loadUnitFile()
 {
     bool errorOccured(false);
     QString message;
@@ -329,7 +428,7 @@ void SavesAccess::loadUnitFile()
         (migrantModel == Q_NULLPTR))
     {
         qDebug() << "Human, neutral, violent mob models haven't been set up yet.";
-        return;
+        return false;
     }
 
     // Open file and make sure it went okay.
@@ -338,8 +437,7 @@ void SavesAccess::loadUnitFile()
         // TODO: Make this error apparent on the interface somehow.
         QString message = "The unit file (un.sav) seems to be missing! Saving disabled.";
         emit fileLoadStatusChanged(true, message);
-
-        return;
+        return false;
     }
     else
     {
@@ -445,9 +543,11 @@ void SavesAccess::loadUnitFile()
 
         unitFile.close();
     }
+
+    return errorOccured;
 }
 
-void SavesAccess::saveUnitFile()
+bool SavesAccess::saveUnitFile()
 {
     // Compile all the units into the unit file.
 
@@ -458,7 +558,7 @@ void SavesAccess::saveUnitFile()
     {
         qDebug() << "The unit models haven't been set up.";
 
-        return;
+        return true;
     }
 
     QFile unitFile(g_pSettings->getSavesDirectory()
@@ -472,7 +572,7 @@ void SavesAccess::saveUnitFile()
         QString message = "Saving failed! Check to make sure the un.sav file isn't open in another program.";
         emit fileSaveStatusChanged(true, message);
 
-        return;
+        return true;
     }
     else
     {
@@ -520,6 +620,8 @@ void SavesAccess::saveUnitFile()
     emit fileSaveStatusChanged(false, message);
 
     unitFile.close();
+
+    return false;
 }
 
 void SavesAccess::writeToMatlab(int squareSize)
