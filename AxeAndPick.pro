@@ -49,7 +49,8 @@ HEADERS += \
     savedgamelistmodel.h \
     violentmoblistmodel.h \
     neutralmoblistmodel.h \
-    utils.h
+    utils.h \
+    main.h
 
 RESOURCES +=
 
