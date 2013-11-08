@@ -61,17 +61,6 @@ Component {
 
                     anchors.top: nameText.bottom
                     anchors.left: nameText.left
-                    anchors.right: nameText.right
-
-                    font.pointSize: 7
-                    color: "grey"
-                    clip: true
-                }
-                Text {
-                    id: typeAdditional
-                    text: "additional"
-
-                    anchors.left: typeProfession.right
 
                     font.pointSize: 7
                     color: "grey"
@@ -104,14 +93,28 @@ Component {
                 }
         }
 
+        Image {
+            id: infoButton
+            anchors.right: deleteButton.left
+            anchors.rightMargin: 5
+            anchors.verticalCenter: parent.verticalCenter
+            source: "images/infoButton.svg"
 
-//        // Item seperator
-//        Rectangle {
-//            anchors.left: parent.left
-//            anchors.right: parent.right
-//            anchors.bottom: parent.bottom
-//            height: 1
-//            color: "#FFE3E3E3"
-//        }
+            MouseArea {
+                id: infoButtonArea
+                anchors.fill: parent
+                onClicked: {
+                    humanModel.info(id)
+                }
+            }
+            states:
+                State { // Pressed
+                    when: infoButtonArea.pressed
+                    PropertyChanges {
+                        target: infoButton
+                        source: "images/infoButtonPressed.svg"
+                    }
+                }
+        }
     }
 }

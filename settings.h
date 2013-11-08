@@ -12,29 +12,31 @@ public:
     ~Settings();
 
     // Get's
-    Q_INVOKABLE bool getAutoBackupShort()           { return m_bAutoBackupShort; }
-    Q_INVOKABLE bool getAutoBackupLong()            { return m_bAutoBackupLong; }
-    Q_INVOKABLE short getMaxBackup()                { return m_iMaxBackup; }
-    Q_INVOKABLE QString getSavesDirectory()         { return m_sSavesDirectory; }
+    Q_INVOKABLE bool GetAutoBackupShort()           { return m_bAutoBackupShort; }
+    Q_INVOKABLE short GetMaxBackupShort()           { return m_iMaxBackupShort; }
+    Q_INVOKABLE bool GetAutoBackupLong()            { return m_bAutoBackupLong; }
+    Q_INVOKABLE short GetMaxBackupLong()            { return m_iMaxBackupLong; }
+
+    Q_INVOKABLE QString GetSavesDirectory()         { return m_sSavesDirectory; }
 
     // Set's
-    Q_INVOKABLE void setAutoBackupShort(bool v)     { m_bAutoBackupShort = v; }
-    Q_INVOKABLE void invertAutoBackupShort()        { m_bAutoBackupShort = !m_bAutoBackupShort; }
+    Q_INVOKABLE void SetAutoBackupShort(bool v)     { m_bAutoBackupShort = v; }
+    Q_INVOKABLE void InvertAutoBackupShort()        { m_bAutoBackupShort = !m_bAutoBackupShort; }
+    Q_INVOKABLE void SetMaxBackupShort(int v)       { m_iMaxBackupShort = v; }
 
-    Q_INVOKABLE void setAutoBackupLong(bool v)      { m_bAutoBackupLong = v; }
-    Q_INVOKABLE void invertAutoBackupLong()         { m_bAutoBackupLong = !m_bAutoBackupLong; }
+    Q_INVOKABLE void SetAutoBackupLong(bool v)      { m_bAutoBackupLong = v; }
+    Q_INVOKABLE void InvertAutoBackupLong()         { m_bAutoBackupLong = !m_bAutoBackupLong; }
+    Q_INVOKABLE void SetMaxBackupLong(int v)        { m_iMaxBackupLong = v; }
 
-    Q_INVOKABLE void setMaxBackup(short v)          { m_iMaxBackup = v; }
-
-    Q_INVOKABLE void setSavesDirectory(QString v)   { m_sSavesDirectory = v; }
+    Q_INVOKABLE void SetSavesDirectory(QString v)   { m_sSavesDirectory = v; }
 
 private:
     bool m_bAutoBackupShort;
+    int m_iMaxBackupShort;
     bool m_bAutoBackupLong;
-    short m_iMaxBackup;
+    int m_iMaxBackupLong;
+
     QString m_sSavesDirectory;
 };
-
-
 
 #endif // SETTINGS_H

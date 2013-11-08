@@ -700,7 +700,7 @@ QVariant Human::data(int role) const
         return hunger();
 
     case AdditionalRole:
-        return experience();
+        return tailorLevel();
 
     default:
         return QVariant();

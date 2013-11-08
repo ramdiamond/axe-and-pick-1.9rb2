@@ -31,7 +31,7 @@ Item {
 
     function resetValidityMarker()
     {
-        directoryText.text = settings.getSavesDirectory();
+        directoryText.text = settings.GetSavesDirectory();
         directoryTextOutline.color = savesAccess.pathIsValid() ? "green" : "red";
         if( savesAccess.pathIsValid() )
         {
@@ -116,9 +116,9 @@ Item {
                             centerIn: parent;
                         }
 
-                        text: settings.getSavesDirectory();
+                        text: settings.GetSavesDirectory();
                         onTextChanged: {
-                            settings.setSavesDirectory(text);
+                            settings.SetSavesDirectory(text);
                             resetValidityMarker();
                         }
 
@@ -139,7 +139,7 @@ Item {
                         onClicked: {
                             // Open the file dialog
                             savesAccess.openFileDialog();
-                            directoryText.text = settings.getSavesDirectory();
+                            directoryText.text = settings.GetSavesDirectory();
                         }
                     }
                     states:

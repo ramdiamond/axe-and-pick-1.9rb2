@@ -34,7 +34,9 @@ SOURCES += main.cpp \
     savedgamelistmodel.cpp \
     violentmoblistmodel.cpp \
     neutralmoblistmodel.cpp \
-    utils.cpp
+    utils.cpp \
+    guimainwindow.cpp \
+    guisettingswindow.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
@@ -50,7 +52,9 @@ HEADERS += \
     violentmoblistmodel.h \
     neutralmoblistmodel.h \
     utils.h \
-    main.h
+    main.h \
+    guimainwindow.h \
+    guisettingswindow.h
 
 RESOURCES +=
 
@@ -64,4 +68,5 @@ OTHER_FILES += \
     qml/AxeAndPick/ViolentMobDelegate.qml \
     application_icon.icns \
     male_names.txt \
-    female_names.txt
+    female_names.txt \
+    qml/AxeAndPick/GuiSettingsWindow.qml

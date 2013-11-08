@@ -68,10 +68,12 @@ Item {
                     onEntered: { parent.color = "#0A000000" }
                     onExited: { parent.color = "transparent" }
                     onClicked: {
-                        settingsDialog.enabled = true;
-                        settingsDialog.visible = true;
+                        //settingsDialog.enabled = true;
+                        //settingsDialog.visible = true;
+
                         // Unnecessary animation, right?
                         //openFileButton.showClickAnimation();
+                        myHandler.OpenSettingsButton();
                     }
                 }
             }
