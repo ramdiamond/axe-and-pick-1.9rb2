@@ -1,8 +1,6 @@
+#include "main.h"
+#include "mainapp.h"
 #include "violentmoblistmodel.h"
-
-#include <QDebug>
-#include <sstream>
-#include <QStringList>
 
 // Initialize the counter
 long ViolentMob::id_counter = 0;

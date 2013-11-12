@@ -5,7 +5,8 @@
  * Version: 1.0
  */
 
-#include <QDebug>
+#include "main.h"
+#include "mainapp.h"
 #include "listmodel.h"
 
 ListModel::ListModel(ListItem* prototype, QObject *parent) :

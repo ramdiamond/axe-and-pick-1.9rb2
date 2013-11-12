@@ -1,8 +1,6 @@
+#include "main.h"
+#include "mainapp.h"
 #include "neutralmoblistmodel.h"
-
-#include <QDebug>
-#include <sstream>
-#include <QStringList>
 
 // Initialize the counter
 long NeutralMob::id_counter = 0;

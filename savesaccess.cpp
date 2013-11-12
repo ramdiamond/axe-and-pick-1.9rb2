@@ -1,11 +1,8 @@
+#include "main.h"
+#include "mainapp.h"
 #include "savesaccess.h"
-#include "settings.h"
-#include "guimainwindow.h"
 
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QWidget>
-#include <QDebug>
+#include "utils.h"
 
 SavesAccess::SavesAccess(QObject *parent) :
     QObject(parent),
@@ -35,12 +32,12 @@ bool SavesAccess::loadSavedGame(QString gameName)
 
 bool SavesAccess::saveSavedGame()
 {
-    if (g_pGuiMainWindow->GetSettings()->GetAutoBackupShort()) {
+    if (g_pMainApp->GetSettings()->GetAutoBackupShort()) {
         int numBackups = 0;
         QDir saveDir;
 
         saveDir.setFilter(QDir::Files | QDir::Hidden | QDir::Readable);
-        saveDir = g_pGuiMainWindow->GetSettings()->GetSavesDirectory() + "/" + selectedSaveName;
+        saveDir = g_pMainApp->GetSettings()->GetSavesDirectory() + "/" + selectedSaveName;
         if (!saveDir.exists()) {
             QString message = "Saving failed! Check to make sure the save game directory exists, and has proper permissions.";
             emit fileSaveStatusChanged(true, message);
@@ -68,9 +65,9 @@ bool SavesAccess::saveSavedGame()
         numBackups++; // We're the next auto backup short number.
         QString fileOffset, fileOffsetMinus;
 
-        if (numBackups > g_pGuiMainWindow->GetSettings()->GetMaxBackupShort()) {
+        if (numBackups > g_pMainApp->GetSettings()->GetMaxBackupShort()) {
             // Now we can go back a bit :)
-            numBackups = g_pGuiMainWindow->GetSettings()->GetMaxBackupShort();
+            numBackups = g_pMainApp->GetSettings()->GetMaxBackupShort();
 
             if (! (QFile::remove(saveDir.filePath("re.1.sav"))) ) {
                 QString message = "I can't delete the re.1.sav file!";
@@ -114,7 +111,7 @@ bool SavesAccess::saveSavedGame()
         }
     }
 
-    if (g_pGuiMainWindow->GetSettings()->GetAutoBackupLong()) {
+    if (g_pMainApp->GetSettings()->GetAutoBackupLong()) {
         // TODO: this :P
         QString message = "Auto-backup Long not supported atm.";
         qDebug() << message;
@@ -134,7 +131,7 @@ void SavesAccess::openFileDialog()
     // Not sure if this is the cause of the weird Windows behavior
     // or not. Something to try.
     QFileDialog fileDialog(0,"Timber and Stone saves.sav file");
-    fileDialog.setDirectory(g_pGuiMainWindow->GetSettings()->GetSavesDirectory());
+    fileDialog.setDirectory(g_pMainApp->GetSettings()->GetSavesDirectory());
     fileDialog.setNameFilter("Saves File (saves.sav)");
 
     // Open the file dialog so the user can select the saves.sav file.
@@ -143,7 +140,7 @@ void SavesAccess::openFileDialog()
         QDir rootSavesDirectory;
         rootSavesDirectory.setPath(fileDialog.selectedFiles().first());
         rootSavesDirectory.cdUp(); // This trims off the saves.sav file.
-        g_pGuiMainWindow->GetSettings()->SetSavesDirectory(rootSavesDirectory.absolutePath());
+        g_pMainApp->GetSettings()->SetSavesDirectory(rootSavesDirectory.absolutePath());
     }
 }
 
@@ -151,7 +148,7 @@ bool SavesAccess::pathIsValid()
 {
     // Return True if both the directory path is valid
     // and the saves.sav file exists.
-    QFile savedGameFile(g_pGuiMainWindow->GetSettings()->GetSavesDirectory() + "/saves.sav");
+    QFile savedGameFile(g_pMainApp->GetSettings()->GetSavesDirectory() + "/saves.sav");
 
     if (savedGameFile.exists())
         return true;
@@ -162,7 +159,7 @@ bool SavesAccess::pathIsValid()
 void SavesAccess::loadGamesList()
 {
     // Save the file name.
-    QFile savedGameFile(g_pGuiMainWindow->GetSettings()->GetSavesDirectory() + "/saves.sav");
+    QFile savedGameFile(g_pMainApp->GetSettings()->GetSavesDirectory() + "/saves.sav");
 
     if (savedGameModel == Q_NULLPTR)
     {
@@ -233,7 +230,7 @@ void SavesAccess::setResourceListModel(ResourceListModel * model)
 
 bool SavesAccess::loadResourceFile()
 {
-    QFile resourceFile(g_pGuiMainWindow->GetSettings()->GetSavesDirectory()
+    QFile resourceFile(g_pMainApp->GetSettings()->GetSavesDirectory()
                        + "/" + selectedSaveName
                        + "/" + "re.sav");
 
@@ -246,7 +243,7 @@ bool SavesAccess::loadResourceFile()
     // Open file and make sure it went okay.
     if (!resourceFile.exists() || !resourceFile.open(QFile::ReadOnly))
     {
-        qDebug() << g_pGuiMainWindow->GetSettings()->GetSavesDirectory()
+        qDebug() << g_pMainApp->GetSettings()->GetSavesDirectory()
                     + "/" + selectedSaveName
                     + "/" + "re.sav";
 
@@ -349,7 +346,7 @@ bool SavesAccess::saveResourceFile()
         return true;
     }
 
-    QFile resourceFile(g_pGuiMainWindow->GetSettings()->GetSavesDirectory()
+    QFile resourceFile(g_pMainApp->GetSettings()->GetSavesDirectory()
                        + "/" + selectedSaveName
                        + "/" + "re.sav");
 
@@ -418,7 +415,7 @@ bool SavesAccess::loadUnitFile()
     QString message;
 
     // Compose the file name.
-    QFile unitFile(g_pGuiMainWindow->GetSettings()->GetSavesDirectory()
+    QFile unitFile(g_pMainApp->GetSettings()->GetSavesDirectory()
                    + "/" + selectedSaveName
                    + "/" + "un.sav");
 
@@ -561,7 +558,7 @@ bool SavesAccess::saveUnitFile()
         return true;
     }
 
-    QFile unitFile(g_pGuiMainWindow->GetSettings()->GetSavesDirectory()
+    QFile unitFile(g_pMainApp->GetSettings()->GetSavesDirectory()
                        + "/" + selectedSaveName
                        + "/" + "un.sav");
 
@@ -629,12 +626,12 @@ void SavesAccess::writeToMatlab(int squareSize)
     qDebug() << "Opening file...";
 
     // Create a new file for storing all these points. Comma seperated.
-    QFile matlabFile(g_pGuiMainWindow->GetSettings()->GetSavesDirectory()
+    QFile matlabFile(g_pMainApp->GetSettings()->GetSavesDirectory()
                     + "/" + selectedSaveName
                     + "/" + "cd.dat");
     matlabFile.open(QFile::WriteOnly);
 
-    QFile worldFile(g_pGuiMainWindow->GetSettings()->GetSavesDirectory()
+    QFile worldFile(g_pMainApp->GetSettings()->GetSavesDirectory()
                     + "/" + selectedSaveName
                     + "/" + "cd.sav");
     worldFile.open(QFile::ReadOnly);

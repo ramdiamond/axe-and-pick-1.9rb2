@@ -39,4 +39,10 @@
     #endif
 #endif
 
+#define RET_ERROR 255
+
+class MainApp;
+
+extern MainApp *g_pMainApp;
+
 #endif // MAIN_H

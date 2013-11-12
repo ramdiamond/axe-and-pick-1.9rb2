@@ -1,7 +1,6 @@
+#include "main.h"
+#include "mainapp.h"
 #include "savedgamelistmodel.h"
-
-#include <QDebug>
-#include <sstream>
 
 long SavedGame::id_counter = 0;
 

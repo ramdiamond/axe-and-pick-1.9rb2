@@ -1,14 +1,8 @@
+#include "main.h"
+#include "mainapp.h"
 #include "humanlistmodel.h"
 
-#include <QDebug>
-#include <QStringList>
-#include <QFile>
-#include <QCoreApplication>
-#include <sstream>
-
-
 #include "utils.h"
-
 
 // Initialize the counter
 long Human::id_counter = 0;

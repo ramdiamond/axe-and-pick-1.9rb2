@@ -36,7 +36,8 @@ SOURCES += main.cpp \
     neutralmoblistmodel.cpp \
     utils.cpp \
     guimainwindow.cpp \
-    guisettingswindow.cpp
+    guisettingswindow.cpp \
+    mainapp.cpp
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
@@ -54,7 +55,8 @@ HEADERS += \
     utils.h \
     main.h \
     guimainwindow.h \
-    guisettingswindow.h
+    guisettingswindow.h \
+    mainapp.h
 
 RESOURCES +=
 
@@ -69,4 +71,5 @@ OTHER_FILES += \
     application_icon.icns \
     male_names.txt \
     female_names.txt \
-    qml/AxeAndPick/GuiSettingsWindow.qml
+    qml/AxeAndPick/GuiSettingsWindow.qml \
+    qml/AxeAndPick/GuiMainWindow.qml

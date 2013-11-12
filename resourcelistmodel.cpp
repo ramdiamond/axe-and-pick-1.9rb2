@@ -1,7 +1,6 @@
+#include "main.h"
+#include "mainapp.h"
 #include "resourcelistmodel.h"
-
-#include <QDebug>
-#include <sstream>
 
 // Initialize the counter
 long Resource::id_counter = 0;

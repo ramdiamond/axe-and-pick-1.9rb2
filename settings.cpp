@@ -1,6 +1,6 @@
+#include "main.h"
+#include "mainapp.h"
 #include "settings.h"
-
-#include <QCoreApplication>
 
 Settings::Settings(QObject *parent)
         : QSettings(QSettings::IniFormat,

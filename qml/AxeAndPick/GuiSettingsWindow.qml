@@ -1,71 +1,40 @@
 import QtQuick 2.0
-import QtGraphicalEffects 1.0
+//import QtGraphicalEffects 1.0
 
 Item {
-    id: settingsDialog
-
-    property int windowWidth
-    property string filePath
-    property variant settingsObject
-
-    anchors.fill: parent
+    width: 700
+    height: 600
+    id: rootWindow
 
     onVisibleChanged: {
-        resetValidityMarker();
+        directoryText.text = myHandler.getSavesDirectory();
+        directoryTextOutline.color = myHandler.isSavesDirectoryValid() ? "green" : "red";
     }
 
     Rectangle {
         anchors.fill: parent
-        color: "#80dddddd"
-    }
-
-    function resetValidityMarker()
-    {
-        autoBackupShortCheckboxId.checked = settings.getAutoBackupShort();
-        autoBackupLongCheckboxId.checked = settings.getAutoBackupLong();
-
-        directoryText.text = settings.getSavesDirectory();
-        directoryTextOutline.color = savesAccess.pathIsValid() ? "green" : "red";
-        if( savesAccess.pathIsValid() )
-        {
-            savesAccess.loadGamesList();
-        }
+        color: "#ffdddddd"
     }
 
     Rectangle {
-        id: fileOpenWindowBackground
-        width: windowWidth
-        color: "silver"
+        id: rootWindowBackground
+        color: "#ffdddddd"
 
-        anchors.top: parent.top
-        anchors.topMargin: 30
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 30
-
-        // NOTE: The width is 5 to reflect consistancy with the draggable
-        // border between lists.
+        anchors.fill: parent;
+        anchors.margins: 5;
         border.width: 5
-        border.color: "gray"
-
-        MouseArea {
-            // This is to disable clicks going through the window.
-            anchors.fill: parent
-            onClicked: {}
-        }
+        border.color: "#ff888888"
     }
 
 
     Item {
         id: fileOpenContents
-        anchors.top: fileOpenWindowBackground.top
-        anchors.topMargin: 5
-        anchors.left: fileOpenWindowBackground.left
-        anchors.leftMargin: 5
-        anchors.right: fileOpenWindowBackground.right
-        anchors.rightMargin: 5
-        anchors.bottom: fileOpenWindowBackground.bottom
-        anchors.bottomMargin: 5
+        x: 5
+        y: 5
+        width: 250
+        height: 530
+        anchors.fill: rootWindowBackground;
+        anchors.margins: 5;
 
         Rectangle {
             id: savesFileDirectoryBackground
@@ -116,73 +85,61 @@ Item {
             }
 
             Rectangle {
-                id: directoryTextOutline
-                color: "gray"
+                id: directoryTextBackground
+                color: "#FFf8f8f8"
                 height: 24
 
+                border.color: "#ff888888";
+                border.width: 1;
+
+                clip: true
                 anchors.left: parent.left
-                anchors.leftMargin: 0
+                anchors.leftMargin: 1
+                anchors.right: openFileButton.left
+                anchors.rightMargin: 1
+                anchors.verticalCenter: parent.verticalCenter
+
+                TextInput {
+                    id: directoryText
+                    objectName: "SavesDirectoryText";
+                    width: directoryTextBackground.width-12
+                    anchors {
+                        left: parent.left;
+                        right: parent.right;
+                        centerIn: parent;
+                    }
+
+                    text: "";
+                    onTextChanged: {
+                        myHandler.onTextChangedSavesDirectory(text);
+                    }
+
+                    autoScroll: true
+                    selectByMouse: true
+                    font.pointSize: 10
+                }
+            }
+            Image {
+                id: openFileButton
                 anchors.right: parent.right
-                anchors.rightMargin: 0
-                anchors.top: directoryTitleOutline.bottom
-                anchors.topMargin: 4
-
-                Rectangle {
-                    id: directoryTextBackground
-                    color: "#FFf8f8f8"
-                    height: parent.height-2
-
-                    clip: true
-                    anchors.left: parent.left
-                    anchors.leftMargin: 1
-                    anchors.right: openFileButton.left
-                    anchors.rightMargin: 1
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    TextInput {
-                        id: directoryText
-                        width: directoryTextBackground.width-12
-                        anchors {
-                            left: parent.left;
-                            right: parent.right;
-                            centerIn: parent;
-                        }
-
-                        text: settings.getSavesDirectory();
-                        onTextChanged: {
-                            settings.setSavesDirectory(text);
-                            resetValidityMarker();
-                        }
-
-                        autoScroll: true
-                        selectByMouse: true
-                        font.pointSize: 10
+                anchors.rightMargin: 1
+                anchors.verticalCenter: parent.verticalCenter
+                source: "images/openButton.svg"
+                MouseArea {
+                    id: openFileButtonArea
+                    anchors.fill: parent
+                    onClicked: {
+                        myHandler.onClickOpenSavesDirectoryFile();
                     }
                 }
-                Image {
-                    id: openFileButton
-                    anchors.right: parent.right
-                    anchors.rightMargin: 1
-                    anchors.verticalCenter: parent.verticalCenter
-                    source: "images/openButton.svg"
-                    MouseArea {
-                        id: openFileButtonArea
-                        anchors.fill: parent
-                        onClicked: {
-                            // Open the file dialog
-                            savesAccess.openFileDialog();
-                            directoryText.text = settings.getSavesDirectory();
+                states:
+                    State { // Pressed
+                        when: openFileButtonArea.pressed
+                        PropertyChanges {
+                            target: openFileButton
+                            source: "images/openButtonPressed.svg"
                         }
                     }
-                    states:
-                        State { // Pressed
-                            when: openFileButtonArea.pressed
-                            PropertyChanges {
-                                target: openFileButton
-                                source: "images/openButtonPressed.svg"
-                            }
-                        }
-                }
             }
         }
 
@@ -236,29 +193,28 @@ Item {
 
             Checkbox {
                 id: autoBackupShortCheckboxId;
+                objectName: "AutoBackupShortCheckboxId";
                 anchors.top: autoBackupTitleOutline.bottom;
                 anchors.left: parent.left;
                 anchors.right: parent.right;
                 height: 30;
 
-                //color: "transparent";
-
                 checkboxText: "Backup re.sav and un.sav (Recommened)";
-                checked: myHandler.getAutoBackupShort();
+                checked: false;
 
                 MouseArea {
                     anchors.fill: parent;
                     drag.filterChildren: true;
                     onClicked: {
                         myHandler.onClickAutoBackupShort();
-                        //settings.invertAutoBackupShort();
-                        //autoBackupShortCheckboxId.checked = settings.getAutoBackupShort();
+                        //autoBackupShortCheckboxId.checked = myHandler.getAutoBackupShort();
                     }
                 }
             }
 
             Checkbox {
                 id: autoBackupLongCheckboxId;
+                objectName: "AutoBackupLongCheckboxId";
                 anchors.top: autoBackupShortCheckboxId.bottom;
                 anchors.left: parent.left;
                 anchors.right: parent.right;
@@ -267,14 +223,14 @@ Item {
                 color: "transparent";
 
                 checkboxText: "Backup saves dir (Not Recommended)";
-                checked: myHandler.getAutoBackupLong();
+                checked: false;
 
                 MouseArea {
                     anchors.fill: parent;
                     drag.filterChildren: true;
                     onClicked: {
                         myHandler.onClickAutoBackupLong();
-                        //autoBackupLongCheckboxId.checked = settings.getAutoBackupLong();
+                        //autoBackupLongCheckboxId.checked = myHandler.getAutoBackupLong();
                     }
                 }
             }

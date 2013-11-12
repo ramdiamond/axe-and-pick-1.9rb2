@@ -74,7 +74,6 @@ private:
     ViolentMobListModel * violentMobModel;
     HumanListModel * migrantModel;
 
-
     // World/Ground File
 public:
     Q_INVOKABLE void writeToMatlab(int squareSize);

@@ -1,61 +1,54 @@
-#include "guisettingswindow.h"
-#include "guimainwindow.h"
+#include <QQuickItem>
 
-GUISettingsWindow::GUISettingsWindow()
+#include "qtquick2applicationviewer.h"
+
+#include "main.h"
+#include "mainapp.h"
+
+void GUISettingsWindow::UpdateDisplay()
 {
+    // Update the file info
+    QObject *pqo = g_pMainApp->GetGuiSettingsDialogViewer()->rootObject()->findChild<QObject*>("SavesDirectoryText");
+    if (! pqo) return;
+    pqo->setProperty("text", g_pMainApp->GetSettings()->GetSavesDirectory());
+    pqo->setProperty("border.color", g_pMainApp->GetSavesAccess()->pathIsValid() ? "green" : "red");
+
+    // Update the checkboxs
+    pqo = g_pMainApp->GetGuiSettingsDialogViewer()->rootObject()->findChild<QObject*>("AutoBackupShortCheckboxId");
+    if (! pqo) return;
+    pqo->setProperty("checked", g_pMainApp->GetSettings()->GetAutoBackupShort());
+
+    // Update the checkboxs
+    pqo = g_pMainApp->GetGuiSettingsDialogViewer()->rootObject()->findChild<QObject*>("AutoBackupLongCheckboxId");
+    if (! pqo) return;
+    pqo->setProperty("checked", g_pMainApp->GetSettings()->GetAutoBackupLong());
 }
-
-
-int GUISettingsWindow::Initialize()
-{
-    int ret = 0;
-
-    return ret;
-}
-
-int GUISettingsWindow::Clean()
-{
-    int ret = 0;
-
-    return ret;
-}
-
-
 
 /******************************************
  *
  * Q_INVOKABLE buttons
  *
  ******************************************/
-
-
-
-void GUISettingsWindow::OnClickAutoBackupShort()
+void GUISettingsWindow::onClickOpenSavesDirectoryFile()
 {
-
+    g_pMainApp->GetSavesAccess()->openFileDialog();
+    UpdateDisplay();
 }
 
-void GUISettingsWindow::OnClickAutoBackupLong()
+void GUISettingsWindow::onTextChangedSavesDirectory(QVariant text)
 {
-
+    g_pMainApp->GetSettings()->SetSavesDirectory(text.toString());
+    UpdateDisplay();
 }
 
-
-
-/******************************************
- *
- * Q_INVOKABLE get's
- *
- ******************************************/
-
-
-
-QVariant GUISettingsWindow::GetAutoBackupShort()
+void GUISettingsWindow::onClickAutoBackupShort()
 {
-    return g_pGuiMainWindow->GetSettings()->GetAutoBackupShort();
+    g_pMainApp->GetSettings()->InvertAutoBackupShort();
+    UpdateDisplay();
 }
 
-QVariant GUISettingsWindow::GetAutoBackupLong()
+void GUISettingsWindow::onClickAutoBackupLong()
 {
-    return g_pGuiMainWindow->GetSettings()->GetAutoBackupLong();
+    g_pMainApp->GetSettings()->InvertAutoBackupLong();
+    UpdateDisplay();
 }
